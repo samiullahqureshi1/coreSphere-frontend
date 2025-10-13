@@ -10,11 +10,15 @@ import {
   FiSearch,
   FiPlus,
   FiX,
+  FiPhone,
+  FiMail,
 } from "react-icons/fi";
 
 export default function HumanResources() {
   const [activeTab, setActiveTab] = useState("employees");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [activeViewTab, setActiveViewTab] = useState("profile");
+
   const [loading, setLoading] = useState(false);
   const [employees, setEmployees] = useState([]);
   const [formData, setFormData] = useState({
@@ -22,6 +26,114 @@ export default function HumanResources() {
     role: "",
     avatar: "",
   });
+  const [selectedDoc, setSelectedDoc] = useState(null);
+  const [leaves, setLeaves] = useState([]);
+  const [payrolls, setPayrolls] = useState([]);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+
+  const handleViewEmployee = async (id) => {
+    try {
+      const res = await fetch(
+        `http://localhost:5000/Employee/getEmployeeById/${id}`
+      );
+      const data = await res.json();
+      if (data.success) {
+        setSelectedEmployee(data.employee);
+        setIsViewOpen(true);
+      } else {
+        alert("Failed to fetch employee details");
+      }
+    } catch (err) {
+      console.error("Error viewing employee:", err);
+      alert("Error viewing employee details");
+    }
+  };
+
+  const handleDeleteEmployee = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this employee?"))
+      return;
+    try {
+      const res = await fetch(
+        `http://localhost:5000/Employee/deleteEmployee/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+      const data = await res.json();
+      if (data.success) {
+        setEmployees((prev) => prev.filter((emp) => emp._id !== id));
+        alert("Employee deleted successfully");
+      } else {
+        alert(data.message || "Failed to delete employee");
+      }
+    } catch (err) {
+      console.error("Error deleting employee:", err);
+      alert("Error deleting employee");
+    }
+  };
+  useEffect(() => {
+    const fetchPayrolls = async () => {
+      try {
+        const res = await fetch(
+          "http://localhost:5000/Employee/getAllPayrolls"
+        );
+        const data = await res.json();
+        if (data.success) {
+          setPayrolls(data.payrolls);
+        } else {
+          console.error("Failed to fetch payrolls:", data.message);
+        }
+      } catch (err) {
+        console.error("Error fetching payrolls:", err);
+      }
+    };
+    fetchPayrolls();
+  }, []);
+
+  const handlePayrollStatusChange = async (empId, payrollId, newStatus) => {
+    try {
+      const res = await fetch(
+        `http://localhost:5000/Employee/updatePayrollStatus/${empId}/${payrollId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
+
+      const data = await res.json();
+      if (data.success) {
+        setPayrolls((prev) =>
+          prev.map((p) =>
+            p._id === payrollId ? { ...p, paymentStatus: newStatus } : p
+          )
+        );
+      } else {
+        alert("Failed to update status");
+      }
+    } catch (err) {
+      console.error("Error updating payroll status:", err);
+      alert("Error updating payroll status");
+    }
+  };
+
+  useEffect(() => {
+    const fetchLeaves = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/Leave/getLeaves");
+        const data = await res.json();
+        if (data.success) {
+          setLeaves(data.leaves);
+        } else {
+          console.error("Failed to fetch leaves:", data.message);
+        }
+      } catch (err) {
+        console.error("Error fetching leaves:", err);
+      }
+    };
+    fetchLeaves();
+  }, []);
 
   // === FETCH EMPLOYEES FROM API ===
   useEffect(() => {
@@ -106,17 +218,32 @@ export default function HumanResources() {
     }
   };
 
-  const leaves = [
-    {
-      name: "Bob Williams",
-      role: "Frontend Developer",
-      avatar: "https://randomuser.me/api/portraits/men/45.jpg",
-      type: "Vacation",
-      dates: "Aug 9, 2024 - Aug 14, 2024",
-      status: "Approved",
-      color: "bg-green-100 text-green-700",
-    },
-  ];
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const res = await fetch(
+        `http://localhost:5000/Leave/updateLeaveStatus/${id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
+
+      const data = await res.json();
+      if (data.success) {
+        setLeaves((prev) =>
+          prev.map((leave) =>
+            leave._id === id ? { ...leave, status: newStatus } : leave
+          )
+        );
+      } else {
+        alert("Failed to update status");
+      }
+    } catch (err) {
+      console.error("Error updating status:", err);
+      alert("Error updating status");
+    }
+  };
 
   const attendance = [
     { name: "John Smith", date: "Oct 12, 2025", status: "Present" },
@@ -274,29 +401,97 @@ export default function HumanResources() {
 
         <main className="p-6 overflow-y-auto">
           {activeTab === "employees" && (
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-              {employees.length ? (
-                employees.map((emp, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col items-center hover:shadow-md transition"
-                  >
-                    <img
-                      src={
-                        emp.avatar ||
-                        `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                          emp.name
-                        )}&background=random`
-                      }
-                      alt={emp.name}
-                      className="w-20 h-20 rounded-full object-cover mb-4"
-                    />
-                    <h3 className="text-gray-800 font-semibold">{emp.name}</h3>
-                    <p className="text-gray-500 text-sm">{emp.role}</p>
-                  </div>
-                ))
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-700 mb-4">
+                Employee Directory
+              </h2>
+
+              {employees.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm border-collapse">
+                    <thead>
+                      <tr className="bg-gray-50 text-gray-600 font-semibold text-left">
+                        <th className="p-3 border-b">Profile</th>
+                        <th className="p-3 border-b">Name</th>
+                        <th className="p-3 border-b">Role</th>
+                        <th className="p-3 border-b">Department</th>
+                        <th className="p-3 border-b">Email</th>
+                        <th className="p-3 border-b text-center">Status</th>
+                        <th className="p-3 border-b text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {employees.map((emp, idx) => (
+                        <tr
+                          key={idx}
+                          className="border-b hover:bg-gray-50 transition-colors duration-200"
+                        >
+                          <td className="p-3">
+                            <img
+                              src={
+                                emp.avatar ||
+                                `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                  emp.name
+                                )}&background=random`
+                              }
+                              alt={emp.name}
+                              className="w-10 h-10 rounded-full object-cover border"
+                            />
+                          </td>
+
+                          <td className="p-3 font-medium text-gray-800">
+                            {emp.name || "-"}
+                          </td>
+
+                          <td className="p-3">
+                            <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
+                              {emp.role || "—"}
+                            </span>
+                          </td>
+
+                          <td className="p-3">
+                            <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium">
+                              {emp.department || "—"}
+                            </span>
+                          </td>
+
+                          <td className="p-3 text-gray-600">
+                            {emp.email || "—"}
+                          </td>
+
+                          <td className="p-3 text-center">
+                            <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
+                              Active
+                            </span>
+                          </td>
+                          <td className="p-3 text-center">
+                            <div className="flex items-center justify-center gap-3">
+                              <button
+                                onClick={() => handleViewEmployee(emp._id)}
+                                title="View Details"
+                                className="flex items-center gap-1 bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1 rounded-full text-xs font-semibold transition duration-200"
+                              >
+                                <FiUser size={12} />
+                                View
+                              </button>
+
+                              <button
+                                onClick={() => handleDeleteEmployee(emp._id)}
+                                title="Delete Employee"
+                                className="flex items-center gap-1 bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1 rounded-full text-xs font-semibold transition duration-200"
+                              >
+                                <FiX size={12} />
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               ) : (
-                <p className="text-gray-500 text-center col-span-4">
+                <p className="text-gray-500 text-center py-6">
                   No employees found.
                 </p>
               )}
@@ -304,43 +499,143 @@ export default function HumanResources() {
           )}
 
           {activeTab === "leave" && (
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-              <h2 className="font-semibold mb-3 text-gray-700">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-700 mb-4">
                 Leave Requests
               </h2>
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-gray-600 font-semibold">
-                  <tr>
-                    <th className="p-2 text-left">Employee</th>
-                    <th className="p-2 text-left">Type</th>
-                    <th className="p-2 text-left">Dates</th>
-                    <th className="p-2 text-left">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {leaves.map((l, i) => (
-                    <tr key={i} className="border-t">
-                      <td className="p-2 flex items-center gap-3">
-                        <img
-                          src={l.avatar}
-                          alt={l.name}
-                          className="w-8 h-8 rounded-full"
-                        />
-                        {l.name}
-                      </td>
-                      <td className="p-2">{l.type}</td>
-                      <td className="p-2">{l.dates}</td>
-                      <td className="p-2">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${l.color}`}
-                        >
-                          {l.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+
+              {leaves.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm border-collapse">
+                    <thead>
+                      <tr className="text-gray-600 bg-gray-50 font-semibold text-left">
+                        <th className="p-3 border-b">Employee Name</th>
+                        <th className="p-3 border-b">Leave Type</th>
+                        <th className="p-3 border-b">Leave From</th>
+                        <th className="p-3 border-b">Leave To</th>
+                        <th className="p-3 border-b text-center">Days</th>
+                        <th className="p-3 border-b text-center">Status</th>
+                        <th className="p-3 border-b text-center">Actions</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {leaves.map((l, i) => {
+                        const start = new Date(l.startDate);
+                        const end = new Date(l.endDate);
+                        const days = Math.ceil(
+                          (end - start) / (1000 * 60 * 60 * 24) + 1
+                        );
+
+                        return (
+                          <tr
+                            key={i}
+                            className="border-b hover:bg-gray-50 transition duration-200"
+                          >
+                            <td className="p-3 flex items-center gap-3">
+                              <img
+                                src={
+                                  l.employeeId?.avatar ||
+                                  `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                    l.employeeId?.name || "User"
+                                  )}&background=random`
+                                }
+                                alt={l.employeeId?.name}
+                                className="w-9 h-9 rounded-full object-cover border"
+                              />
+                              <div>
+                                <p className="font-semibold text-gray-800">
+                                  {l.employeeId?.name}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {l.employeeId?.role}
+                                </p>
+                              </div>
+                            </td>
+
+                            <td className="p-3">
+                              <span
+                                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                  l.leaveType === "Sick Leave"
+                                    ? "bg-green-100 text-green-700"
+                                    : l.leaveType === "Casual Leave"
+                                    ? "bg-yellow-100 text-yellow-700"
+                                    : l.leaveType === "Maternity"
+                                    ? "bg-pink-100 text-pink-700"
+                                    : "bg-blue-100 text-blue-700"
+                                }`}
+                              >
+                                {l.leaveType}
+                              </span>
+                            </td>
+
+                            <td className="p-3 text-gray-700">
+                              {start.toLocaleDateString()}
+                            </td>
+                            <td className="p-3 text-gray-700">
+                              {end.toLocaleDateString()}
+                            </td>
+
+                            <td className="p-3 text-center font-semibold text-gray-800">
+                              {days}
+                            </td>
+
+                            <td className="p-3 text-center">
+                              <span
+                                className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                  l.status === "Approved"
+                                    ? "bg-green-100 text-green-700"
+                                    : l.status === "Rejected"
+                                    ? "bg-red-100 text-red-700"
+                                    : "bg-yellow-100 text-yellow-700"
+                                }`}
+                              >
+                                {l.status}
+                              </span>
+                            </td>
+
+                            <td className="p-3 text-center">
+                              <div className="flex justify-center gap-3">
+                                <button
+                                  onClick={() =>
+                                    handleStatusChange(l._id, "Approved")
+                                  }
+                                  className={`px-4 py-1.5 text-xs font-semibold rounded-full border transition duration-200 
+        ${
+          l.status === "Approved"
+            ? "text-white bg-green-600 border-green-600"
+            : "text-green-600 border-green-500 hover:bg-green-50"
+        }`}
+                                >
+                                  Approve
+                                </button>
+
+                                <button
+                                  onClick={() =>
+                                    handleStatusChange(l._id, "Rejected")
+                                  }
+                                  className={`px-4 py-1.5 text-xs font-semibold rounded-full border transition duration-200 
+        ${
+          l.status === "Rejected"
+            ? "text-white bg-red-600 border-red-600"
+            : "text-red-600 border-red-500 hover:bg-red-50"
+        }`}
+                                >
+                                  Reject
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-6">
+                  No leave requests found.
+                </p>
+              )}
             </div>
           )}
 
@@ -370,22 +665,118 @@ export default function HumanResources() {
           )}
 
           {activeTab === "payroll" && (
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-              <h2 className="font-semibold mb-3 text-gray-700">
-                Payroll Summary
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-700 mb-4">
+                Payroll Management
               </h2>
-              {payroll.map((p, i) => (
-                <div
-                  key={i}
-                  className="flex justify-between py-2 border-b text-sm"
-                >
-                  <span>{p.name}</span>
-                  <span>{p.month}</span>
-                  <span className="font-semibold text-gray-800">
-                    {p.salary}
-                  </span>
+
+              {payrolls.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm border-collapse">
+                    <thead>
+                      <tr className="bg-gray-50 text-gray-600 font-semibold text-left">
+                        <th className="p-3 border-b">Employee</th>
+                        <th className="p-3 border-b">Department</th>
+                        <th className="p-3 border-b">Month</th>
+                        <th className="p-3 border-b text-right">Base Salary</th>
+                        <th className="p-3 border-b text-right">Bonus</th>
+                        <th className="p-3 border-b text-right">Deductions</th>
+                        <th className="p-3 border-b text-right">Net Salary</th>
+                        <th className="p-3 border-b text-center">
+                          Payment Status
+                        </th>
+                        <th className="p-3 border-b text-center">Action</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {payrolls.map((p, i) => (
+                        <tr
+                          key={i}
+                          className="border-b hover:bg-gray-50 transition-colors duration-200"
+                        >
+                          {/* Employee Info */}
+                          <td className="p-3 flex items-center gap-3">
+                            <img
+                              src={
+                                p.avatar ||
+                                `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                  p.name
+                                )}&background=random`
+                              }
+                              alt={p.name}
+                              className="w-9 h-9 rounded-full object-cover border"
+                            />
+                            <div>
+                              <p className="font-medium text-gray-800">
+                                {p.name}
+                              </p>
+                              <p className="text-xs text-gray-500">{p.role}</p>
+                            </div>
+                          </td>
+
+                          <td className="p-3 text-gray-700">
+                            {p.department || "—"}
+                          </td>
+                          <td className="p-3 text-gray-700">{p.month}</td>
+
+                          {/* Salary Columns */}
+                          <td className="p-3 text-right text-gray-700">
+                            ${p.baseSalary?.toLocaleString() || 0}
+                          </td>
+                          <td className="p-3 text-right text-green-600">
+                            +${p.bonus?.toLocaleString() || 0}
+                          </td>
+                          <td className="p-3 text-right text-red-600">
+                            -${p.deductions?.toLocaleString() || 0}
+                          </td>
+                          <td className="p-3 text-right font-semibold text-gray-900">
+                            ${p.netSalary?.toLocaleString() || p.baseSalary}
+                          </td>
+
+                          {/* Status Badge */}
+                          <td className="p-3 text-center">
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                p.paymentStatus === "Paid"
+                                  ? "bg-green-100 text-green-700"
+                                  : p.paymentStatus === "Pending"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {p.paymentStatus}
+                            </span>
+                          </td>
+
+                          {/* Dropdown for Updating */}
+                          <td className="p-3 text-center">
+                            <select
+                              value={p.paymentStatus}
+                              onChange={(e) =>
+                                handlePayrollStatusChange(
+                                  p.employeeId,
+                                  p._id,
+                                  e.target.value
+                                )
+                              }
+                              className="border border-gray-300 rounded-lg px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="Pending">Pending</option>
+                              <option value="Paid">Paid</option>
+                              <option value="Failed">Failed</option>
+                            </select>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              ))}
+              ) : (
+                <p className="text-gray-500 text-center py-6">
+                  No payroll records found.
+                </p>
+              )}
             </div>
           )}
 
@@ -678,6 +1069,325 @@ export default function HumanResources() {
             </button>
           </form>
         </div>
+      </div>
+      {/* 👁️ Employee View Drawer */}
+      <div
+        className={`fixed top-0 right-0 h-full w-[450px] bg-white shadow-2xl transform transition-transform duration-300 z-50 overflow-y-auto ${
+          isViewOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        {/* Header */}
+        <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
+          <h2 className="text-lg font-semibold text-gray-800">
+            Employee Profile
+          </h2>
+          <button
+            onClick={() => setIsViewOpen(false)}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <FiX size={20} />
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex border-b border-gray-200">
+          {[
+            { key: "profile", label: "Profile" },
+            { key: "payroll", label: "Payroll" },
+            { key: "documents", label: "Documents" },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveViewTab(tab.key)}
+              className={`flex-1 py-3 text-sm font-medium ${
+                activeViewTab === tab.key
+                  ? "border-b-2 border-blue-600 text-blue-600"
+                  : "text-gray-500 hover:text-blue-600"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Drawer Body */}
+        <div className="p-6 space-y-6">
+          {selectedEmployee ? (
+            <>
+              {/* 🧍 Profile Tab */}
+              {activeViewTab === "profile" && (
+                <div className="space-y-6">
+                  {/* 🧍 Profile Header */}
+                  <div className="flex flex-col items-center text-center">
+                    <img
+                      src={
+                        selectedEmployee.avatar ||
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                          selectedEmployee.name
+                        )}&background=random`
+                      }
+                      alt={selectedEmployee.name}
+                      className="w-24 h-24 rounded-full object-cover border mb-3 shadow-sm"
+                    />
+
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      {selectedEmployee.name}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {selectedEmployee.role}
+                    </p>
+
+                    <span
+                      className={`mt-2 inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                        selectedEmployee.status === "Active"
+                          ? "bg-green-100 text-green-700"
+                          : selectedEmployee.status === "On Leave"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : selectedEmployee.status === "Inactive"
+                          ? "bg-gray-100 text-gray-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {selectedEmployee.status}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                    {/*  */}
+                    <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 px-3 py-2 rounded-lg">
+                      <FiMail className="text-blue-600" />
+                      <div className="text-xs text-gray-700 truncate">
+                        <p className="font-semibold text-blue-700">Email</p>
+                        <p>{selectedEmployee.email}</p>
+                      </div>
+                    </div>
+
+                    {selectedEmployee.phone && (
+                      <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-lg">
+                        <FiPhone className="text-purple-600" />
+                        <div className="text-xs text-gray-700">
+                          <p className="font-semibold text-purple-700">Phone</p>
+                          <p>{selectedEmployee.phone}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedEmployee.department && (
+                      <div className="flex items-center gap-2 bg-teal-50 border border-teal-100 px-3 py-2 rounded-lg">
+                        <FiBriefcase className="text-teal-600" />
+                        <div className="text-xs text-gray-700">
+                          <p className="font-semibold text-teal-700">
+                            Department
+                          </p>
+                          <p>{selectedEmployee.department}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Joining Date */}
+                    {selectedEmployee.joiningDate && (
+                      <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-100 px-3 py-2 rounded-lg">
+                        <FiCalendar className="text-indigo-600" />
+                        <div className="text-xs text-gray-700">
+                          <p className="font-semibold text-indigo-700">
+                            Joining Date
+                          </p>
+                          <p>
+                            {new Date(
+                              selectedEmployee.joiningDate
+                            ).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Salary */}
+                    {selectedEmployee.salary && (
+                      <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-100 px-3 py-2 rounded-lg">
+                        <FiDollarSign className="text-yellow-600" />
+                        <div className="text-xs text-gray-700">
+                          <p className="font-semibold text-yellow-700">
+                            Salary
+                          </p>
+                          <p>${selectedEmployee.salary.toLocaleString()}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* DOB */}
+                    {selectedEmployee.dob && (
+                      <div className="flex items-center gap-2 bg-pink-50 border border-pink-100 px-3 py-2 rounded-lg">
+                        <FiUser className="text-pink-600" />
+                        <div className="text-xs text-gray-700">
+                          <p className="font-semibold text-pink-700">
+                            Date of Birth
+                          </p>
+                          <p>
+                            {new Date(
+                              selectedEmployee.dob
+                            ).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Divider + Quick Summary */}
+                  <div className="border-t border-gray-200 pt-4 mt-4">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                      Quick Summary
+                    </h4>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      <li className="flex items-center gap-2">
+                        <FiUser className="text-blue-600" />
+                        <span>
+                          <strong>Role:</strong> {selectedEmployee.role}
+                        </span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <FiBriefcase className="text-teal-600" />
+                        <span>
+                          <strong>Department:</strong>{" "}
+                          {selectedEmployee.department || "—"}
+                        </span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <FiStar className="text-yellow-600" />
+                        <span>
+                          <strong>Status:</strong> {selectedEmployee.status}
+                        </span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {/* 💰 Payroll Tab */}
+              {activeViewTab === "payroll" && (
+                <div>
+                  {selectedEmployee.payrollHistory?.length > 0 ? (
+                    <div className="space-y-3">
+                      {selectedEmployee.payrollHistory.map((p, i) => (
+                        <div
+                          key={i}
+                          className="border border-gray-200 rounded-lg p-3 flex justify-between items-center hover:bg-gray-50 transition"
+                        >
+                          <div>
+                            <p className="font-medium text-gray-800">
+                              {p.month}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              Net Salary: ${p.netSalary}
+                            </p>
+                          </div>
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                              p.paymentStatus === "Paid"
+                                ? "bg-green-100 text-green-700"
+                                : p.paymentStatus === "Pending"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-red-100 text-red-700"
+                            }`}
+                          >
+                            {p.paymentStatus}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-sm">
+                      No payroll history available.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* 📄 Documents Tab */}
+              {activeViewTab === "documents" && (
+                <div>
+                  {selectedEmployee.documents?.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-3">
+                      {selectedEmployee.documents.map((doc, i) => (
+                        <div
+                          key={i}
+                          className="flex flex-col items-center bg-gray-50 rounded-lg p-3 hover:shadow cursor-pointer transition"
+                          onClick={() => setSelectedDoc(doc)}
+                        >
+                          <div className="w-12 h-12 bg-white flex items-center justify-center border rounded mb-2">
+                            {doc.match(/\.(jpg|jpeg|png)$/i) ? (
+                              <img
+                                src={doc}
+                                alt={`doc-${i}`}
+                                className="w-10 h-10 object-cover rounded"
+                              />
+                            ) : (
+                              <span className="text-lg">📄</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-700 text-center truncate w-full">
+                            {decodeURIComponent(doc.split("/").pop())}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-sm">
+                      No documents uploaded.
+                    </p>
+                  )}
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="text-gray-500">Loading employee details...</p>
+          )}
+        </div>
+
+        {/* 📄 Document Preview Modal */}
+        {selectedDoc && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-[999] flex items-center justify-center">
+            <div className="bg-white w-[80%] h-[80%] rounded-xl shadow-2xl relative p-4">
+              <button
+                onClick={() => setSelectedDoc(null)}
+                className="absolute top-3 right-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full p-1"
+              >
+                <FiX size={18} />
+              </button>
+
+              {selectedDoc.match(/\.(jpg|jpeg|png)$/i) ? (
+                <img
+                  src={selectedDoc}
+                  alt="Document Preview"
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <iframe
+                  src={selectedDoc}
+                  title="Document"
+                  className="w-full h-full rounded"
+                ></iframe>
+              )}
+
+              <div className="absolute bottom-3 right-3 flex gap-3">
+                <a
+                  href={selectedDoc}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                >
+                  Download
+                </a>
+                <button
+                  onClick={() => window.print()}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium"
+                >
+                  Print
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {isDrawerOpen && (

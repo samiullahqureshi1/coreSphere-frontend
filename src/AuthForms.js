@@ -36,11 +36,9 @@ const Login = () => {
       throw new Error(data.error || "Invalid credentials");
     }
 
-    // ✅ Save user info properly
     localStorage.setItem("token", data.token);
     localStorage.setItem("userid", data.user._id);
 
-    // ✅ Redirect to dashboard
     navigate("/dashboard");
   } catch (error) {
     console.error(error);

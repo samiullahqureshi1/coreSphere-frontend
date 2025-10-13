@@ -133,11 +133,17 @@ export default function Sidebar() {
     { name: "Support", icon: <LifeBuoy size={18} />, path: "/support" },
   ];
 
-  // ✅ Logout function
-  const handleLogout = () => {
-    if (window.confirm("Are you sure you want to log out?")) {
-      localStorage.removeItem("token");
-      navigate("/login");
+  const handleLogout = async () => {
+    const userId = localStorage.getItem("userid");
+    try {
+      await fetch(
+        `http://localhost:5000/auth/logout/${userId}`,
+        { method: "POST" }
+      );
+      localStorage.clear();
+      navigate("/login", { replace: true });
+    } catch (error) {
+      console.error("Logout failed:", error);
     }
   };
 

@@ -1,140 +1,3 @@
-// import { BarChart, PieChart, Pie, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
-// import Sidebar from "../component/Sidebar";
-// import {
-//   FiClipboard,
-//   FiDollarSign,
-//   FiUsers,
-//   FiCheckCircle,
-//    FiBell, FiSearch
-// } from "react-icons/fi";
-// // React Icons
-
-// export default function Dashboard() {
-//   const dealsData = [
-//     { stage: "Lead", value: 1 },
-//     { stage: "Qualified", value: 2 },
-//     { stage: "Proposal", value: 1 },
-//     { stage: "Negotiation", value: 1 },
-//     { stage: "Closed", value: 1 },
-//   ];
-
-//   const tasksData = [
-//     { name: "In Progress", value: 40, fill: "#4285F4" },
-//     { name: "Completed", value: 30, fill: "#FBBC05" },
-//     { name: "Pending", value: 20, fill: "#34A853" },
-//     { name: "Cancelled", value: 10, fill: "#5F6368" },
-//   ];
-
-//  // ✅ Updated with React Icons
-//   const stats = [
-//     {
-//       title: "Open Tasks",
-//       value: "7",
-//       subtext: "Tasks currently in progress or to-do",
-//       icon: <FiClipboard className="text-gray-400" size={20} />,
-//     },
-//     {
-//       title: "Pipeline Value",
-//       value: "$235,000",
-//       subtext: "Total value of all active deals",
-//       icon: <FiDollarSign className="text-gray-400" size={20} />,
-//     },
-//     {
-//       title: "Total Employees",
-//       value: "4",
-//       subtext: "Active members in your organization",
-//       icon: <FiUsers className="text-gray-400" size={20} />,
-//     },
-//     {
-//       title: "Deals Won",
-//       value: "1",
-//       subtext: "Deals closed this cycle",
-//       icon: <FiCheckCircle className="text-gray-400" size={20} />,
-//     },
-//   ];
-
-
-//   return (
-//     <div className="flex h-screen bg-gray-100">
-//       <Sidebar />
-
-//       {/* Main Section */}
-//       <div className="flex-1 flex flex-col">
-//         {/* Top Navbar */}
-//         <header className="flex justify-between items-center bg-white px-6 py-3 shadow-sm">
-//           <div>
-//             <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-//             <p className="text-gray-500 text-sm">Welcome back! Here's a snapshot of your business.</p>
-//           </div>
-
-//           <div className="flex items-center gap-4">
-//             <FiSearch className="text-gray-600 cursor-pointer" size={18} />
-//             <FiBell className="text-gray-600 cursor-pointer" size={18} />
-//             <img
-//               src="https://randomuser.me/api/portraits/men/32.jpg"
-//               alt="Profile"
-//               className="w-9 h-9 rounded-full object-cover"
-//             />
-//           </div>
-//         </header>
-
-//         {/* Dashboard Content */}
-//         <main className="p-6 overflow-y-auto">
-//           {/* Stats Cards */}
-//           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-//             {stats.map((item) => (
-//               <div
-//                 key={item.title}
-//                 className="bg-white shadow-sm rounded-xl p-5 border border-gray-200"
-//               >
-//                 <div className="flex justify-between items-start mb-2">
-//                   <h3 className="text-gray-600 text-sm font-medium">{item.title}</h3>
-//                   <span className="text-gray-400 text-lg">{item.icon}</span>
-//                 </div>
-//                 <p className="text-2xl font-bold text-gray-900">{item.value}</p>
-//                 <p className="text-sm text-gray-500 mt-1">{item.subtext}</p>
-//               </div>
-//             ))}
-//           </div>
-
-//           {/* Charts Section */}
-//           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-//             {/* Bar Chart */}
-//             <div className="bg-white shadow-sm rounded-xl p-5 border border-gray-200">
-//               <h3 className="text-md font-semibold text-gray-800 mb-3">Deals by Stage</h3>
-//               <ResponsiveContainer width="100%" height={250}>
-//                 <BarChart data={dealsData}>
-//                   <CartesianGrid strokeDasharray="3 3" />
-//                   <XAxis dataKey="stage" />
-//                   <YAxis />
-//                   <Tooltip />
-//                   <Bar dataKey="value" fill="#1E90FF" />
-//                 </BarChart>
-//               </ResponsiveContainer>
-//             </div>
-
-//             {/* Pie Chart */}
-//             <div className="bg-white shadow-sm rounded-xl p-5 border border-gray-200">
-//               <h3 className="text-md font-semibold text-gray-800 mb-3">Tasks by Status</h3>
-//               <ResponsiveContainer width="100%" height={250}>
-//                 <PieChart>
-//                   <Pie
-//                     data={tasksData}
-//                     dataKey="value"
-//                     nameKey="name"
-//                     outerRadius={90}
-//                     label
-//                   />
-//                   <Tooltip />
-//                 </PieChart>
-//               </ResponsiveContainer>
-//             </div>
-//           </div>
-//         </main>
-//       </div>
-//     </div>
-//   );
-// }
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import Sidebar from "../component/Sidebar";
@@ -145,6 +8,10 @@ import {
   FiCheckCircle,
   FiBell,
   FiSearch,
+  FiUserCheck,
+  FiCalendar,
+  FiTrendingUp,
+  FiBarChart2,
 } from "react-icons/fi";
 import {
   BarChart,
@@ -157,10 +24,24 @@ import {
   CartesianGrid,
   ResponsiveContainer,
 } from "recharts";
-import EmployeeLeaveForm from "../component/EmployeeLeaveForm"; // 👈 Import leave form
+import EmployeeLeaveForm from "../component/EmployeeLeaveForm";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
+  const [showLeaveForm, setShowLeaveForm] = useState(false);
+
+  const [announcements, setAnnouncements] = useState([
+    {
+      title: "Holiday Notice",
+      message: "Office will remain closed on 15th October for maintenance.",
+      date: "2025-10-10",
+    },
+    {
+      title: "New Policy Update",
+      message: "All employees must update their contact info by next week.",
+      date: "2025-10-08",
+    },
+  ]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -168,7 +49,6 @@ export default function Dashboard() {
 
     try {
       const decoded = jwtDecode(token);
-   
       setUser(decoded);
     } catch (err) {
       console.error("Invalid token:", err);
@@ -184,8 +64,9 @@ export default function Dashboard() {
     );
   }
 
-  const isAdmin = user.role === "admin"; 
+  const role = user.role?.toLowerCase(); // admin | employee | hr | manager
 
+  // ===== Sample Data =====
   const dealsData = [
     { stage: "Lead", value: 1 },
     { stage: "Qualified", value: 2 },
@@ -201,47 +82,47 @@ export default function Dashboard() {
     { name: "Cancelled", value: 10, fill: "#5F6368" },
   ];
 
-  const stats = [
-    {
-      title: "Open Tasks",
-      value: "7",
-      subtext: "Tasks currently in progress or to-do",
-      icon: <FiClipboard className="text-gray-400" size={20} />,
-    },
-    {
-      title: "Pipeline Value",
-      value: "$235,000",
-      subtext: "Total value of all active deals",
-      icon: <FiDollarSign className="text-gray-400" size={20} />,
-    },
-    {
-      title: "Total Employees",
-      value: "4",
-      subtext: "Active members in your organization",
-      icon: <FiUsers className="text-gray-400" size={20} />,
-    },
-    {
-      title: "Deals Won",
-      value: "1",
-      subtext: "Deals closed this cycle",
-      icon: <FiCheckCircle className="text-gray-400" size={20} />,
-    },
-  ];
+  // ===== Shared Top Bar Stats =====
+  const stats = {
+    admin: [
+      { title: "Open Tasks", value: "7", icon: <FiClipboard size={20} /> },
+      { title: "Pipeline Value", value: "$235,000", icon: <FiDollarSign size={20} /> },
+      { title: "Total Employees", value: "4", icon: <FiUsers size={20} /> },
+      { title: "Deals Won", value: "1", icon: <FiCheckCircle size={20} /> },
+    ],
+    hr: [
+      { title: "Active Employees", value: "42", icon: <FiUsers size={20} /> },
+      { title: "Pending Leaves", value: "5", icon: <FiCalendar size={20} /> },
+      { title: "New Hires", value: "3", icon: <FiUserCheck size={20} /> },
+      { title: "Resignations", value: "1", icon: <FiClipboard size={20} /> },
+    ],
+    manager: [
+      { title: "Team Members", value: "8", icon: <FiUsers size={20} /> },
+      { title: "Active Projects", value: "5", icon: <FiTrendingUp size={20} /> },
+      { title: "Tasks In Progress", value: "14", icon: <FiClipboard size={20} /> },
+      { title: "Completed Tasks", value: "9", icon: <FiCheckCircle size={20} /> },
+    ],
+  };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
       <Sidebar />
 
       <div className="flex-1 flex flex-col">
-        <header className="flex justify-between items-center bg-white px-6 py-3 shadow-sm">
+        {/* ===== HEADER ===== */}
+        <header className="flex justify-between items-center bg-white px-6 py-4 shadow-sm border-b border-gray-200">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">
-              {isAdmin ? "Admin Dashboard" : "Employee Dashboard"}
+            <h1 className="text-2xl font-bold text-gray-800 capitalize">
+              {role} Dashboard
             </h1>
-            <p className="text-gray-500 text-sm">
-              {isAdmin
-                ? "Welcome back! Here's a snapshot of your organization."
-                : "Apply for leave and view your leave history."}
+            <p className="text-gray-500 text-sm mt-1">
+              {role === "admin"
+                ? "Overview of company performance and metrics."
+                : role === "hr"
+                ? "Manage employee records, leaves, and recruitment."
+                : role === "manager"
+                ? "Monitor your team’s performance and projects."
+                : "Apply for leave and view company announcements."}
             </p>
           </div>
 
@@ -256,40 +137,38 @@ export default function Dashboard() {
                 )}&background=random`
               }
               alt="Profile"
-              className="w-9 h-9 rounded-full object-cover"
+              className="w-10 h-10 rounded-full border border-gray-300 object-cover"
             />
           </div>
         </header>
 
-        <main className="p-6 overflow-y-auto">
-          {isAdmin && (
+        {/* ===== MAIN CONTENT ===== */}
+        <main className="flex-1 p-6 overflow-y-auto">
+          {/* ===== ADMIN VIEW ===== */}
+          {role === "admin" && (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-                {stats.map((item) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                {stats.admin.map((item) => (
                   <div
                     key={item.title}
-                    className="bg-white shadow-sm rounded-xl p-5 border border-gray-200"
+                    className="bg-white shadow-sm hover:shadow-md transition rounded-xl p-5 border border-gray-200"
                   >
-                    <div className="flex justify-between items-start mb-2">
+                    <div className="flex justify-between items-center mb-2">
                       <h3 className="text-gray-600 text-sm font-medium">
                         {item.title}
                       </h3>
-                      <span className="text-gray-400 text-lg">{item.icon}</span>
+                      <span className="text-gray-400">{item.icon}</span>
                     </div>
                     <p className="text-2xl font-bold text-gray-900">
                       {item.value}
-                    </p>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {item.subtext}
                     </p>
                   </div>
                 ))}
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Bar Chart */}
-                <div className="bg-white shadow-sm rounded-xl p-5 border border-gray-200">
-                  <h3 className="text-md font-semibold text-gray-800 mb-3">
+                <div className="bg-white rounded-xl border p-5">
+                  <h3 className="text-md font-semibold mb-3 text-gray-800">
                     Deals by Stage
                   </h3>
                   <ResponsiveContainer width="100%" height={250}>
@@ -298,13 +177,13 @@ export default function Dashboard() {
                       <XAxis dataKey="stage" />
                       <YAxis />
                       <Tooltip />
-                      <Bar dataKey="value" fill="#1E90FF" />
+                      <Bar dataKey="value" fill="#2563EB" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
 
-                <div className="bg-white shadow-sm rounded-xl p-5 border border-gray-200">
-                  <h3 className="text-md font-semibold text-gray-800 mb-3">
+                <div className="bg-white rounded-xl border p-5">
+                  <h3 className="text-md font-semibold mb-3 text-gray-800">
                     Tasks by Status
                   </h3>
                   <ResponsiveContainer width="100%" height={250}>
@@ -324,14 +203,160 @@ export default function Dashboard() {
             </>
           )}
 
-          {/* === Employee View === */}
-          {!isAdmin && (
-            <div className="max-w-xl mx-auto">
-              <EmployeeLeaveForm />
+          {role === "hr" && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                {stats.hr.map((item) => (
+                  <div
+                    key={item.title}
+                    className="bg-white rounded-xl border p-5 shadow-sm hover:shadow-md transition"
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="text-gray-600 text-sm font-medium">
+                        {item.title}
+                      </h3>
+                      <span className="text-gray-400">{item.icon}</span>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {item.value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm border p-6">
+                <h3 className="text-lg font-semibold mb-4 text-gray-800">
+                  Pending Leave Requests
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  This section will list all pending leave requests (connect your API here).
+                </p>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm border p-6">
+                <h3 className="text-lg font-semibold mb-4 text-gray-800">
+                  Employee Attendance Overview
+                </h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={dealsData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="stage" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="#34A853" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
+          {role === "manager" && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                {stats.manager.map((item) => (
+                  <div
+                    key={item.title}
+                    className="bg-white rounded-xl border p-5 shadow-sm hover:shadow-md transition"
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="text-gray-600 text-sm font-medium">
+                        {item.title}
+                      </h3>
+                      <span className="text-gray-400">{item.icon}</span>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {item.value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm border p-6">
+                <h3 className="text-lg font-semibold mb-4 text-gray-800">
+                  Team Performance Chart
+                </h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={dealsData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="stage" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="#FBBC05" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
+          {role === "employee" && (
+            <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
+              <div className="w-full max-w-2xl">
+                <div className="bg-white shadow-sm rounded-xl p-6 border border-gray-200 mb-6">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      Leave Request
+                    </h3>
+                    <button
+                      onClick={() => setShowLeaveForm(true)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200"
+                    >
+                      Request Leave
+                    </button>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Apply for leave and track your requests below.
+                  </p>
+                </div>
+
+                <div className="bg-white shadow-sm rounded-xl p-6 border border-gray-200">
+                  <h3 className="text-lg font-semibold mb-3 text-gray-800">
+                    Announcements
+                  </h3>
+                  <ul className="space-y-3">
+                    {announcements.length > 0 ? (
+                      announcements.map((item, index) => (
+                        <li
+                          key={index}
+                          className="border-b border-gray-100 pb-2 last:border-none"
+                        >
+                          <p className="font-medium text-gray-900">
+                            {item.title}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {item.message}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {new Date(item.date).toLocaleDateString()}
+                          </p>
+                        </li>
+                      ))
+                    ) : (
+                      <p className="text-gray-500 text-sm">
+                        No announcements available.
+                      </p>
+                    )}
+                  </ul>
+                </div>
+              </div>
             </div>
           )}
         </main>
       </div>
+
+      {/* ===== LEAVE FORM MODAL ===== */}
+      {showLeaveForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-lg relative animate-fadeIn">
+            <button
+              onClick={() => setShowLeaveForm(false)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl font-bold"
+            >
+              ×
+            </button>
+            <EmployeeLeaveForm />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
