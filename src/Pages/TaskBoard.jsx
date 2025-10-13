@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "../component/Sidebar";
 import {
   FiBell,
@@ -8,45 +8,59 @@ import {
   FiTrash2,
   FiX,
 } from "react-icons/fi";
-import {
-  DragDropContext,
-  Droppable,
-  Draggable,
-} from "@hello-pangea/dnd";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 export default function TaskBoard() {
   const [showModal, setShowModal] = useState(false);
-  const [newTask, setNewTask] = useState({
-    title: "",
-    description: "",
-    assignee: "",
-    priority: "Medium",
-  });
-
+  const [employees, setEmployees] = useState([]);
   const [tasks, setTasks] = useState({
-    backlog: [
-      {
-        id: "1",
-        title: "Design user profile page",
-        priority: "Medium",
-        color: "bg-yellow-100 text-yellow-800",
-        avatar: "https://randomuser.me/api/portraits/men/22.jpg",
-        deletable: true,
-      },
-      {
-        id: "2",
-        title: "Define database schema",
-        priority: "Medium",
-        color: "bg-yellow-100 text-yellow-800",
-        avatar: "https://randomuser.me/api/portraits/women/33.jpg",
-      },
-    ],
+    backlog: [],
     todo: [],
     inprogress: [],
     done: [],
   });
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [showDrawer, setShowDrawer] = useState(false);
+  const [newSubtask, setNewSubtask] = useState("");
+  const [newTask, setNewTask] = useState({
+    title: "",
+    description: "",
+    assignees: [],
+    priority: "Medium",
+  });
 
-  const handleDragEnd = (result) => {
+  // === FETCH EMPLOYEES ===
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/Employee/getEmployee");
+        const data = await res.json();
+        if (data.success) setEmployees(data.employees);
+      } catch (err) {
+        console.error("Error fetching employees:", err);
+      }
+    };
+
+    const fetchTasks = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/task/get");
+        const data = await res.json();
+        if (data.success) {
+          const grouped = { backlog: [], todo: [], inprogress: [], done: [] };
+          data.tasks.forEach((task) => grouped[task.status].push(task));
+          setTasks(grouped);
+        }
+      } catch (err) {
+        console.error("Error fetching tasks:", err);
+      }
+    };
+
+    fetchEmployees();
+    fetchTasks();
+  }, []);
+
+  // === HANDLE DRAG END (Kanban Move) ===
+  const handleDragEnd = async (result) => {
     const { source, destination } = result;
     if (!destination) return;
 
@@ -60,39 +74,62 @@ export default function TaskBoard() {
     const updatedDest = Array.from(tasks[destCol]);
     updatedDest.splice(destination.index, 0, movedTask);
 
-    setTasks({
+    const updatedTasks = {
       ...tasks,
       [sourceCol]: updatedSource,
       [destCol]: updatedDest,
-    });
-  };
-
-  const handleCreateTask = () => {
-    if (!newTask.title.trim()) return alert("Please enter a task title.");
-
-    const color =
-      newTask.priority === "High"
-        ? "bg-red-100 text-red-800"
-        : newTask.priority === "Medium"
-        ? "bg-yellow-100 text-yellow-800"
-        : "bg-green-100 text-green-800";
-
-    const newItem = {
-      id: Date.now().toString(),
-      title: newTask.title,
-      description: newTask.description,
-      priority: newTask.priority,
-      color,
-      avatar: newTask.assignee,
     };
 
-    setTasks({
-      ...tasks,
-      backlog: [...tasks.backlog, newItem],
-    });
+    setTasks(updatedTasks);
 
-    setNewTask({ title: "", description: "", assignee: "", priority: "Medium" });
-    setShowModal(false);
+    // Optional: Update status in DB
+    try {
+      await fetch(
+        `http://localhost:5000/api/task/updateStatus/${movedTask._id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: destCol }),
+        }
+      );
+    } catch (error) {
+      console.error("Failed to update task status:", error);
+    }
+  };
+
+  // === CREATE TASK ===
+  const handleCreateTask = async () => {
+    if (!newTask.title.trim()) {
+      return alert("Please enter a task title.");
+    }
+
+    try {
+      const res = await fetch("http://localhost:5000/api/task/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newTask),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setTasks((prev) => ({
+          ...prev,
+          backlog: [...prev.backlog, data.task],
+        }));
+        setShowModal(false);
+        setNewTask({
+          title: "",
+          description: "",
+          assignees: [],
+          priority: "Medium",
+        });
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error("Error creating task:", error);
+      alert("Something went wrong creating the task.");
+    }
   };
 
   return (
@@ -167,8 +204,8 @@ export default function TaskBoard() {
                       <div className="flex flex-col gap-3">
                         {tasks[column.key].map((task, idx) => (
                           <Draggable
-                            key={task.id}
-                            draggableId={task.id}
+                            key={task._id}
+                            draggableId={task._id}
                             index={idx}
                           >
                             {(provided, snapshot) => (
@@ -176,7 +213,11 @@ export default function TaskBoard() {
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
-                                className={`bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition ${
+                                onClick={() => {
+                                  setSelectedTask(task);
+                                  setShowDrawer(true);
+                                }}
+                                className={`bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md cursor-pointer transition ${
                                   snapshot.isDragging
                                     ? "shadow-lg ring-2 ring-blue-300"
                                     : ""
@@ -195,20 +236,29 @@ export default function TaskBoard() {
                                 <div className="flex justify-between items-center">
                                   <div className="flex items-center gap-2">
                                     <span
-                                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${task.color}`}
+                                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                        task.priority === "High"
+                                          ? "bg-red-100 text-red-800"
+                                          : task.priority === "Medium"
+                                          ? "bg-yellow-100 text-yellow-800"
+                                          : "bg-green-100 text-green-800"
+                                      }`}
                                     >
                                       {task.priority}
                                     </span>
-                                    {task.deletable && (
-                                      <FiTrash2 className="text-red-500 text-sm cursor-pointer" />
-                                    )}
+                                    <FiTrash2 className="text-red-500 text-sm cursor-pointer" />
                                   </div>
-                                  {task.avatar && (
-                                    <img
-                                      src={task.avatar}
-                                      alt="avatar"
-                                      className="w-7 h-7 rounded-full object-cover"
-                                    />
+                                  {task.assignees?.length > 0 && (
+                                    <div className="flex -space-x-2">
+                                      {task.assignees.map((emp, i) => (
+                                        <img
+                                          key={i}
+                                          src={emp.avatar}
+                                          alt={emp.name}
+                                          className="w-7 h-7 rounded-full border-2 border-white object-cover"
+                                        />
+                                      ))}
+                                    </div>
                                   )}
                                 </div>
                               </div>
@@ -243,7 +293,6 @@ export default function TaskBoard() {
               Fill in the details below to create a new task for your project.
             </p>
 
-            {/* Form */}
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-gray-700">
@@ -275,47 +324,50 @@ export default function TaskBoard() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">
-                    Assignee
-                  </label>
-                  <select
-                    className="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
-                    value={newTask.assignee}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, assignee: e.target.value })
-                    }
-                  >
-                    <option value="">Select an assignee</option>
-                    <option value="https://randomuser.me/api/portraits/men/22.jpg">
-                      John Doe
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Assign Employees
+                </label>
+                <select
+                  multiple
+                  className="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                  value={newTask.assignees}
+                  onChange={(e) =>
+                    setNewTask({
+                      ...newTask,
+                      assignees: Array.from(
+                        e.target.selectedOptions,
+                        (option) => option.value
+                      ),
+                    })
+                  }
+                >
+                  {employees.map((emp) => (
+                    <option key={emp._id} value={emp._id}>
+                      {emp.name} - {emp.role}
                     </option>
-                    <option value="https://randomuser.me/api/portraits/women/33.jpg">
-                      Sarah Smith
-                    </option>
-                    <option value="https://randomuser.me/api/portraits/men/44.jpg">
-                      David Lee
-                    </option>
-                  </select>
-                </div>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-400 mt-1">
+                  Hold CTRL or CMD to select multiple employees.
+                </p>
+              </div>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-700">
-                    Priority
-                  </label>
-                  <select
-                    className="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
-                    value={newTask.priority}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, priority: e.target.value })
-                    }
-                  >
-                    <option>Low</option>
-                    <option>Medium</option>
-                    <option>High</option>
-                  </select>
-                </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Priority
+                </label>
+                <select
+                  className="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                  value={newTask.priority}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, priority: e.target.value })
+                  }
+                >
+                  <option>Low</option>
+                  <option>Medium</option>
+                  <option>High</option>
+                </select>
               </div>
 
               <button
@@ -328,6 +380,293 @@ export default function TaskBoard() {
           </div>
         </div>
       )}
+      {showDrawer && selectedTask && (
+  <>
+    <div
+      className="fixed inset-0 bg-black bg-opacity-30 z-40"
+      onClick={() => setShowDrawer(false)}
+    ></div>
+
+    <div className="fixed top-0 right-0 w-[420px] h-full bg-white shadow-2xl z-50 overflow-y-auto transition-transform duration-300">
+      {/* === Header === */}
+      <div className="flex justify-between items-center border-b px-6 py-4">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-800">Task Details</h2>
+          <p className="text-xs text-gray-500">
+            Created on {new Date(selectedTask.createdAt).toLocaleDateString()}
+          </p>
+        </div>
+        <FiX
+          className="text-gray-500 cursor-pointer"
+          size={22}
+          onClick={() => setShowDrawer(false)}
+        />
+      </div>
+
+      {/* === Content === */}
+      <div className="p-6 space-y-6">
+        {/* Title */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Title</label>
+          <input
+            type="text"
+            value={selectedTask.title}
+            onChange={(e) =>
+              setSelectedTask({ ...selectedTask, title: e.target.value })
+            }
+            className="w-full border rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none"
+          />
+        </div>
+
+        {/* Description */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Description
+          </label>
+          <textarea
+            rows={3}
+            value={selectedTask.description || ""}
+            onChange={(e) =>
+              setSelectedTask({
+                ...selectedTask,
+                description: e.target.value,
+              })
+            }
+            className="w-full border rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none"
+            placeholder="Describe the task..."
+          />
+        </div>
+
+        {/* Priority */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Priority
+          </label>
+          <select
+            value={selectedTask.priority}
+            onChange={(e) =>
+              setSelectedTask({
+                ...selectedTask,
+                priority: e.target.value,
+              })
+            }
+            className="w-full border rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none"
+          >
+            <option>Low</option>
+            <option>Medium</option>
+            <option>High</option>
+          </select>
+        </div>
+
+        {/* Assigned Employees */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Assigned Employees
+          </label>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {selectedTask.assignees?.map((empId) => {
+              const emp = employees.find((e) => e._id === empId);
+              if (!emp) return null;
+              return (
+                <div
+                  key={emp._id}
+                  className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs"
+                >
+                  <img
+                    src={emp.avatar || "https://via.placeholder.com/30"}
+                    alt={emp.name}
+                    className="w-5 h-5 rounded-full"
+                  />
+                  <span>{emp.name}</span>
+                  <FiX
+                    size={12}
+                    className="cursor-pointer ml-1 hover:text-red-500"
+                    onClick={() =>
+                      setSelectedTask({
+                        ...selectedTask,
+                        assignees: selectedTask.assignees.filter(
+                          (id) => id !== empId
+                        ),
+                      })
+                    }
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          <select
+            onChange={(e) => {
+              const empId = e.target.value;
+              if (!selectedTask.assignees.includes(empId) && empId) {
+                setSelectedTask({
+                  ...selectedTask,
+                  assignees: [...selectedTask.assignees, empId],
+                });
+              }
+            }}
+            className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+          >
+            <option value="">Add Employee</option>
+            {employees.map((emp) => (
+              <option key={emp._id} value={emp._id}>
+                {emp.name} - {emp.role}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Subtasks */}
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Subtasks
+            </label>
+            <span className="text-xs text-gray-500">
+              {selectedTask.subtasks?.length || 0} total
+            </span>
+          </div>
+
+          {/* Subtask list */}
+          {selectedTask.subtasks?.length > 0 ? (
+            <ul className="space-y-2">
+              {selectedTask.subtasks.map((st, i) => (
+                <li
+                  key={i}
+                  className="flex justify-between items-center border rounded-lg p-2 bg-gray-50 hover:bg-gray-100 transition"
+                >
+                  <div>
+                    <p
+                      className={`text-sm font-medium ${
+                        st.completed ? "line-through text-gray-400" : ""
+                      }`}
+                    >
+                      {st.title}
+                    </p>
+                    {st.assignee && (
+                      <div className="flex items-center gap-1 text-xs text-gray-600 mt-1">
+                        <img
+                          src={
+                            employees.find((e) => e._id === st.assignee)?.avatar
+                          }
+                          alt=""
+                          className="w-4 h-4 rounded-full"
+                        />
+                        <span>
+                          {
+                            employees.find((e) => e._id === st.assignee)?.name
+                          }
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <input
+                    type="checkbox"
+                    checked={st.completed}
+                    onChange={async (e) => {
+                      const res = await fetch(
+                        `http://localhost:5000/api/task/update/${selectedTask._id}`,
+                        {
+                          method: "PUT",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            subtasks: selectedTask.subtasks.map((s, idx) =>
+                              idx === i
+                                ? { ...s, completed: e.target.checked }
+                                : s
+                            ),
+                          }),
+                        }
+                      );
+                      const data = await res.json();
+                      if (data.success) setSelectedTask(data.task);
+                    }}
+                  />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-gray-400">No subtasks yet.</p>
+          )}
+
+          {/* Add new subtask */}
+          <div className="border rounded-lg p-3 mt-3">
+            <p className="text-sm font-medium text-gray-700 mb-2">Add New Subtask</p>
+            <input
+              type="text"
+              placeholder="Subtask title..."
+              value={newSubtask}
+              onChange={(e) => setNewSubtask(e.target.value)}
+              className="w-full border rounded-lg p-2 text-sm mb-2 focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+            <select
+              onChange={(e) =>
+                setSelectedTask({ ...selectedTask, subAssignee: e.target.value })
+              }
+              className="w-full border rounded-lg p-2 mb-3 focus:ring-2 focus:ring-blue-500 outline-none"
+            >
+              <option value="">Assign employee</option>
+              {employees.map((emp) => (
+                <option key={emp._id} value={emp._id}>
+                  {emp.name} - {emp.role}
+                </option>
+              ))}
+            </select>
+
+            <button
+              onClick={async () => {
+                if (!newSubtask.trim()) return;
+                const res = await fetch(
+                  `http://localhost:5000/api/task/subtask/${selectedTask._id}`,
+                  {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      title: newSubtask,
+                      assignee: selectedTask.subAssignee || null,
+                    }),
+                  }
+                );
+                const data = await res.json();
+                if (data.success) {
+                  setSelectedTask(data.task);
+                  setNewSubtask("");
+                }
+              }}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition text-sm"
+            >
+              Add Subtask
+            </button>
+          </div>
+        </div>
+
+        {/* Save Task Button */}
+        <button
+          onClick={async () => {
+            const res = await fetch(
+              `http://localhost:5000/api/task/update/${selectedTask._id}`,
+              {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(selectedTask),
+              }
+            );
+            const data = await res.json();
+            if (data.success) {
+              alert("Task updated!");
+              setShowDrawer(false);
+            }
+          }}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg mt-4 font-medium"
+        >
+          Save Changes
+        </button>
+      </div>
+    </div>
+  </>
+)}
+
     </div>
   );
 }

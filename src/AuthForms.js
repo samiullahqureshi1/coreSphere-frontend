@@ -1,216 +1,150 @@
-// import React, { useState } from "react";
-// import { useNavigate } from "react-router-dom";
-// import { useAuthContext } from "./Hooks/useAuthContext";
-// import MainDashboard from "./pages/MainDashboard";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
-// const Auth = () => {
-//   const navigate = useNavigate();
-//   const { dispatch, user } = useAuthContext();
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [error, setError] = useState("");
-//   const [loading, setLoading] = useState(false);
-//   const [success, setSuccess] = useState("");
+const Login = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-//   // const handleLogin = async (e) => {
-//   //   e.preventDefault();
-//   //   setError("");
-//   //   setSuccess("");
-//   //   setLoading(true);
+  // Handle form input change
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.id]: e.target.value,
+    });
+  };
 
-//   //   if (!email || !password) {
-//   //     setError("All fields are required.");
-//   //     setLoading(false);
-//   //     return;
-//   //   }
+ const handleLogin = async (e) => {
+  e.preventDefault();
+  setErrorMsg("");
 
-//   //   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-//   //   if (!emailPattern.test(email)) {
-//   //     setError("Please enter a valid email address.");
-//   //     setLoading(false);
-//   //     return;
-//   //   }
+  try {
+    setLoading(true);
 
-//   //   try {
-//   //     const response = await fetch(
-//   //       "https://multi-vendor-marketplace.vercel.app/auth/signIn",
-//   //       {
-//   //         method: "POST",
-//   //         headers: { "Content-Type": "application/json" },
-//   //         body: JSON.stringify({ email, password }),
-//   //       }
-//   //     );
+    const response = await fetch("http://localhost:5000/auth/signIn", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
 
-//   //     const json = await response.json();
-//   //     const path = localStorage.getItem("path") || "/";
+    const data = await response.json();
 
-//   //     if (response.ok) {
-//   //       if (json.token && json.user._id && json.user.email) {
-//   //         localStorage.setItem("usertoken", json.token);
-//   //         localStorage.setItem("userid", json.user._id);
-//   //         localStorage.setItem("email", json.user.email);
-//   //         dispatch({ type: "LOGIN", payload: json });
-//   //         setSuccess("Login successful!");
-//   //         // navigate(path);
-//   //         window.location.reload=path
-//   //         localStorage.removeItem("path");
-//   //       }
-//   //     } else {
-//   //       setError(json.error || "An error occurred during login.");
-//   //     }
-//   //   } catch (error) {
-//   //     setError("An error occurred. Please try again.");
-//   //   } finally {
-//   //     setLoading(false);
-//   //   }
-//   // };
+    if (!response.ok) {
+      throw new Error(data.error || "Invalid credentials");
+    }
 
-//   const handleLogin = async (e) => {
-//     e.preventDefault();
-//     setError("");
-//     setSuccess("");
-//     setLoading(true);
+    // ✅ Save user info properly
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("userid", data.user._id);
 
-//     if (!email || !password) {
-//       setError("All fields are required.");
-//       setLoading(false);
-//       return;
-//     }
+    // ✅ Redirect to dashboard
+    navigate("/dashboard");
+  } catch (error) {
+    console.error(error);
+    setErrorMsg(error.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
-//     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-//     if (!emailPattern.test(email)) {
-//       setError("Please enter a valid email address.");
-//       setLoading(false);
-//       return;
-//     }
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-100 to-gray-200">
+      <div className="bg-white shadow-xl rounded-xl p-8 w-full max-w-md">
+        {/* Logo */}
+        <div className="flex flex-col items-center mb-6">
+          <div className="bg-blue-500 rounded-full p-3 mb-3">
+            <span className="text-white font-bold text-xl">∞</span>
+          </div>
+          <h2 className="text-xl font-bold text-gray-800">
+            Welcome to CoreSphere
+          </h2>
+          <p className="text-gray-500 text-sm mt-1 text-center">
+            Enter your credentials to access your account
+          </p>
+        </div>
 
-//     try {
-//       const response = await fetch(
-//         "https://multi-vendor-marketplace.vercel.app/auth/signIn",
-//         {
-//           method: "POST",
-//           headers: { "Content-Type": "application/json" },
-//           body: JSON.stringify({ email, password }),
-//         }
-//       );
+        {/* Form */}
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="demo@coresphere.io"
+              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              required
+            />
+          </div>
 
-//       const json = await response.json();
-//       const path = localStorage.getItem("path") || "/";
+          <div>
+            <div className="flex justify-between items-center">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Password
+              </label>
+              <Link
+                to="#"
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
+                Forgot your password?
+              </Link>
+            </div>
+            <input
+              type="password"
+              id="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="••••••••"
+              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              required
+            />
+          </div>
 
-//       if (response.ok) {
-//         if (json.token && json.user && json.user._id && json.user.email) {
-//           localStorage.setItem("usertoken", json.token);
-//           localStorage.setItem("userid", json.user._id);
-//           localStorage.setItem("email", json.user.email);
-//           localStorage.setItem("showApprovalPopup", "true");
+          {/* Error Message */}
+          {errorMsg && (
+            <p className="text-red-500 text-sm text-center">{errorMsg}</p>
+          )}
 
-//           if (json.apiKey && json.apiSecretKey) {
-//             localStorage.setItem("apiKey", json.apiKey);
-//             localStorage.setItem("apiSecretKey", json.apiSecretKey);
-//           }
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md transition ${
+              loading && "opacity-70 cursor-not-allowed"
+            }`}
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
 
-//           dispatch({ type: "LOGIN", payload: json });
-//           setSuccess("Login successful!");
-//           localStorage.removeItem("path");
-//           window.location.reload = path;
-//         }
-//       } else {
-//         setError(
-//           json.error || json.message || "An error occurred during login."
-//         );
-//       }
-//     } catch (error) {
-//       setError("An error occurred. Please try again.");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
+          <button
+            type="button"
+            className="w-full border border-gray-300 text-gray-700 hover:bg-gray-100 font-semibold py-2 rounded-md transition"
+          >
+            Login with Google
+          </button>
+        </form>
 
-//   if (user) {
-//     return <MainDashboard />;
-//   }
+        {/* Footer */}
+        <p className="text-center text-gray-600 text-sm mt-6">
+          Don’t have an account?{" "}
+          <Link to="/signup" className="text-blue-600 hover:underline">
+            Sign up
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+};
 
-//   return (
-//     <section className="h-[82vh] flex items-center justify-center bg-gradient-to-r from-purple-600 to-indigo-500">
-//       <div className="flex w-full  max-w-4xl bg-white rounded-lg shadow-lg mx-auto">
-//         <div className=" md:flex  flex-col w-1/2 bg-gradient-to-br from-purple-600 to-indigo-500 p-8 justify-center items-center text-white">
-//           <img
-//             src="/png-logo.png"
-//             alt="Login"
-//             className="w-64 h-64 object-cover"
-//           />
-//           <p className="mt-4 text-center text-sm opacity-90">
-//             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis at
-//             velit maximus, molestie est a, tempor magna.
-//           </p>
-//         </div>
-
-//         <div className="w-full md:w-1/2 p-8">
-//           <h2 className="text-2xl font-semibold text-gray-800 text-center mb-4">
-//             Welcome Back
-//           </h2>
-//           <p className="text-sm text-gray-600 text-center mb-6">
-//             Login to your account
-//           </p>
-
-//           <form onSubmit={handleLogin} className="space-y-4">
-//             <div>
-//               <label className="block text-sm font-medium text-gray-700">
-//                 Email
-//               </label>
-//               <input
-//                 type="email"
-//                 placeholder="Enter your email"
-//                 className="mt-1 w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
-//                 value={email}
-//                 onChange={(e) => setEmail(e.target.value)}
-//                 required
-//               />
-//             </div>
-
-//             <div>
-//               <label className="block text-sm font-medium text-gray-700">
-//                 Password
-//               </label>
-//               <input
-//                 type="password"
-//                 placeholder="Enter your password"
-//                 className="mt-1 w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
-//                 value={password}
-//                 onChange={(e) => setPassword(e.target.value)}
-//                 required
-//               />
-//             </div>
-
-//             {error && <p className="text-red-500 text-sm">{error}</p>}
-
-//             <button
-//               type="submit"
-//               className="w-full bg-indigo-500 text-white py-3 rounded-md hover:bg-indigo-600 transition"
-//               disabled={loading}
-//             >
-//               {loading ? "Logging in..." : "Login"}
-//             </button>
-//           </form>
-
-//           <div className="mt-4 text-center text-sm">
-//             <a
-//               href="/ForgotPassword"
-//               className="text-indigo-500 hover:underline"
-//             >
-//               Forgot Password?
-//             </a>
-//           </div>
-//           <div className="mt-2 text-center text-sm">
-//             <span className="text-gray-600">Don't have an account? </span>
-//             <a href="/signup" className="text-indigo-500 hover:underline">
-//               Create Account
-//             </a>
-//           </div>
-//         </div>
-//       </div>
-//     </section>
-//   );
-// };
-
-// export default Auth;
+export default Login;
