@@ -35,7 +35,7 @@ export default function HumanResources() {
   const handleViewEmployee = async (id) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/Employee/getEmployeeById/${id}`
+        `https://core-sphere-backend.vercel.app/Employee/getEmployeeById/${id}`
       );
       const data = await res.json();
       if (data.success) {
@@ -55,7 +55,7 @@ export default function HumanResources() {
       return;
     try {
       const res = await fetch(
-        `http://localhost:5000/Employee/deleteEmployee/${id}`,
+        `https://core-sphere-backend.vercel.app/Employee/deleteEmployee/${id}`,
         {
           method: "DELETE",
         }
@@ -76,7 +76,7 @@ export default function HumanResources() {
     const fetchPayrolls = async () => {
       try {
         const res = await fetch(
-          "http://localhost:5000/Employee/getAllPayrolls"
+          "https://core-sphere-backend.vercel.app/Employee/getAllPayrolls"
         );
         const data = await res.json();
         if (data.success) {
@@ -94,7 +94,7 @@ export default function HumanResources() {
   const handlePayrollStatusChange = async (empId, payrollId, newStatus) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/Employee/updatePayrollStatus/${empId}/${payrollId}`,
+        `https://core-sphere-backend.vercel.app/Employee/updatePayrollStatus/${empId}/${payrollId}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -121,7 +121,7 @@ export default function HumanResources() {
   useEffect(() => {
     const fetchLeaves = async () => {
       try {
-        const res = await fetch("http://localhost:5000/Leave/getLeaves");
+        const res = await fetch("https://core-sphere-backend.vercel.app/Leave/getLeaves");
         const data = await res.json();
         if (data.success) {
           setLeaves(data.leaves);
@@ -139,7 +139,7 @@ export default function HumanResources() {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const res = await fetch("http://localhost:5000/Employee/getEmployee");
+        const res = await fetch("https://core-sphere-backend.vercel.app/Employee/getEmployee");
         const data = await res.json();
         if (data.success) setEmployees(data.employees);
       } catch (err) {
@@ -185,7 +185,7 @@ export default function HumanResources() {
         }
       }
 
-      const res = await fetch("http://localhost:5000/Employee/addEmployee", {
+      const res = await fetch("https://core-sphere-backend.vercel.app/Employee/addEmployee", {
         method: "POST",
         body: form,
       });
@@ -221,7 +221,7 @@ export default function HumanResources() {
   const handleStatusChange = async (id, newStatus) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/Leave/updateLeaveStatus/${id}`,
+        `https://core-sphere-backend.vercel.app/Leave/updateLeaveStatus/${id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
