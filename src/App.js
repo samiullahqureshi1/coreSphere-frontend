@@ -13,6 +13,7 @@ import CRM from "./Pages/CRM";
 import LandingPage from "./component/LandingPage";
 import Login from "./AuthForms";
 import Signup from "./AuthSignUp";
+import ProjectManagement from "./Pages/ProjectManagement";
 
 const App = () => {
   return (
@@ -22,7 +23,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
 
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/taskbar" element={<TaskBoard />} />
+        <Route path="/taskbar" element={<ProjectManagement />} />
         <Route path="/human-resources" element={<HumanResources />} />
         <Route path="/crm" element={<CRM />} />
 

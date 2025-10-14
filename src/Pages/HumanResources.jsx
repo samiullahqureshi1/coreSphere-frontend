@@ -13,6 +13,7 @@ import {
   FiPhone,
   FiMail,
 } from "react-icons/fi";
+import axios from "axios";
 
 export default function HumanResources() {
   const [activeTab, setActiveTab] = useState("employees");
@@ -121,7 +122,9 @@ export default function HumanResources() {
   useEffect(() => {
     const fetchLeaves = async () => {
       try {
-        const res = await fetch("https://core-sphere-backend.vercel.app/Leave/getLeaves");
+        const res = await fetch(
+          "https://core-sphere-backend.vercel.app/Leave/getLeaves"
+        );
         const data = await res.json();
         if (data.success) {
           setLeaves(data.leaves);
@@ -139,7 +142,9 @@ export default function HumanResources() {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const res = await fetch("https://core-sphere-backend.vercel.app/Employee/getEmployee");
+        const res = await fetch(
+          "https://core-sphere-backend.vercel.app/Employee/getEmployee"
+        );
         const data = await res.json();
         if (data.success) setEmployees(data.employees);
       } catch (err) {
@@ -185,10 +190,13 @@ export default function HumanResources() {
         }
       }
 
-      const res = await fetch("https://core-sphere-backend.vercel.app/Employee/addEmployee", {
-        method: "POST",
-        body: form,
-      });
+      const res = await fetch(
+        "https://core-sphere-backend.vercel.app/Employee/addEmployee",
+        {
+          method: "POST",
+          body: form,
+        }
+      );
 
       const data = await res.json();
 
@@ -245,10 +253,26 @@ export default function HumanResources() {
     }
   };
 
-  const attendance = [
-    { name: "John Smith", date: "Oct 12, 2025", status: "Present" },
-    { name: "Mary Adams", date: "Oct 12, 2025", status: "Absent" },
-  ];
+  const [attendance, setAttendance] = useState([]);
+
+  const fetchAttendance = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const { data } = await axios.get(
+        "https://core-sphere-backend.vercel.app/Employee/getAllEmployeeAttendence",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setAttendance(data.attendance);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "attendance") fetchAttendance();
+  }, [activeTab]);
 
   const payroll = [
     { name: "Alice Johnson", month: "September 2025", salary: "$4,500" },
@@ -264,32 +288,35 @@ export default function HumanResources() {
     { position: "UI Designer", status: "Interviewing", applicants: 8 },
     { position: "Backend Developer", status: "Open", applicants: 5 },
   ];
-
+  const primaryBlue = "sky-600";
+  const primaryBlueHover = "sky-700";
+  const darkIndigo = "indigo-900";
+  const lightBg = "bg-gray-50";
   return (
-    <div className="flex h-screen bg-gray-100 relative overflow-hidden">
+    <div className={`flex h-screen ${lightBg} relative overflow-hidden`}>
       <Sidebar />
 
       <div className="flex-1 flex flex-col">
-        <header className="flex justify-between items-center bg-white px-6 py-4 shadow-sm">
+        <header className="flex justify-between items-center bg-white px-8 py-5 shadow-lg z-10">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">
-              Human Resources
+            <h1 className={`text-3xl font-extrabold text-${darkIndigo}`}>
+              CoreSphere Human Resources
             </h1>
-            <p className="text-gray-500 text-sm">
-              Manage employees, leaves, attendance, payroll, and more.
+            <p className="text-gray-500 text-sm mt-1">
+              Manage employees, leaves, and payroll.
             </p>
           </div>
-
           <button
             onClick={() => setIsDrawerOpen(true)}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
+            className={`flex items-center gap-2 bg-${primaryBlue} hover:bg-${primaryBlueHover} text-white px-5 py-2.5 rounded-xl transition font-semibold shadow-md`}
           >
             <FiPlus size={16} /> Add Employee
           </button>
         </header>
 
-        <div className="flex flex-wrap items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <div className="flex gap-2 flex-wrap py-4">
+        <div className="flex flex-wrap items-center justify-between px-8 py-4 border-b border-gray-100 bg-indigo-50 shadow-sm">
+          {/* Tabs Section */}
+          <div className="flex gap-2 flex-wrap py-3">
             {[
               { key: "employees", label: "Employees", icon: <FiUser /> },
               { key: "leave", label: "Leave Management", icon: <FiCalendar /> },
@@ -305,10 +332,10 @@ export default function HumanResources() {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 shadow-sm ${
                   activeTab === tab.key
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-gray-600 hover:bg-white hover:shadow-sm border border-transparent"
+                    ? "bg-sky-600 text-white shadow-md ring-2 ring-sky-300"
+                    : "text-indigo-900 bg-white hover:bg-sky-50 border border-transparent"
                 }`}
               >
                 {tab.icon}
@@ -317,9 +344,11 @@ export default function HumanResources() {
             ))}
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center border border-gray-300 bg-white px-3 py-2 rounded-lg w-64 shadow-sm">
-              <FiSearch className="text-gray-400 mr-2" />
+          {/* Search + Filters */}
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Search Bar */}
+            <div className="flex items-center border border-gray-200 bg-white px-3 py-2 rounded-xl w-64 shadow-sm focus-within:ring-2 focus-within:ring-sky-600 transition">
+              <FiSearch className="text-sky-600 mr-2" />
               <input
                 type="text"
                 placeholder={
@@ -335,12 +364,13 @@ export default function HumanResources() {
                     ? "Search candidates..."
                     : "Search records..."
                 }
-                className="w-full text-sm outline-none"
+                className="w-full text-sm outline-none text-gray-700 placeholder-gray-400"
               />
             </div>
 
+            {/* Dynamic Filter Dropdowns */}
             {activeTab === "employees" && (
-              <select className="border border-gray-300 bg-white text-sm rounded-lg px-3 py-2 shadow-sm outline-none hover:border-blue-500">
+              <select className="border border-gray-200 bg-white text-sm rounded-xl px-3 py-2 shadow-sm outline-none hover:border-sky-500 focus:ring-2 focus:ring-sky-600 transition">
                 <option value="">All Departments</option>
                 <option value="HR">HR</option>
                 <option value="Engineering">Engineering</option>
@@ -350,7 +380,7 @@ export default function HumanResources() {
             )}
 
             {activeTab === "leave" && (
-              <select className="border border-gray-300 bg-white text-sm rounded-lg px-3 py-2 shadow-sm outline-none hover:border-blue-500">
+              <select className="border border-gray-200 bg-white text-sm rounded-xl px-3 py-2 shadow-sm outline-none hover:border-sky-500 focus:ring-2 focus:ring-sky-600 transition">
                 <option value="">All Status</option>
                 <option value="Approved">Approved</option>
                 <option value="Pending">Pending</option>
@@ -359,7 +389,7 @@ export default function HumanResources() {
             )}
 
             {activeTab === "attendance" && (
-              <select className="border border-gray-300 bg-white text-sm rounded-lg px-3 py-2 shadow-sm outline-none hover:border-blue-500">
+              <select className="border border-gray-200 bg-white text-sm rounded-xl px-3 py-2 shadow-sm outline-none hover:border-sky-500 focus:ring-2 focus:ring-sky-600 transition">
                 <option value="">All Status</option>
                 <option value="Present">Present</option>
                 <option value="Absent">Absent</option>
@@ -368,7 +398,7 @@ export default function HumanResources() {
             )}
 
             {activeTab === "payroll" && (
-              <select className="border border-gray-300 bg-white text-sm rounded-lg px-3 py-2 shadow-sm outline-none hover:border-blue-500">
+              <select className="border border-gray-200 bg-white text-sm rounded-xl px-3 py-2 shadow-sm outline-none hover:border-sky-500 focus:ring-2 focus:ring-sky-600 transition">
                 <option value="">All Months</option>
                 <option value="January">January</option>
                 <option value="February">February</option>
@@ -379,7 +409,7 @@ export default function HumanResources() {
             )}
 
             {activeTab === "recruitment" && (
-              <select className="border border-gray-300 bg-white text-sm rounded-lg px-3 py-2 shadow-sm outline-none hover:border-blue-500">
+              <select className="border border-gray-200 bg-white text-sm rounded-xl px-3 py-2 shadow-sm outline-none hover:border-sky-500 focus:ring-2 focus:ring-sky-600 transition">
                 <option value="">All Status</option>
                 <option value="Open">Open</option>
                 <option value="Interviewing">Interviewing</option>
@@ -388,7 +418,7 @@ export default function HumanResources() {
             )}
 
             {activeTab === "performance" && (
-              <select className="border border-gray-300 bg-white text-sm rounded-lg px-3 py-2 shadow-sm outline-none hover:border-blue-500">
+              <select className="border border-gray-200 bg-white text-sm rounded-xl px-3 py-2 shadow-sm outline-none hover:border-sky-500 focus:ring-2 focus:ring-sky-600 transition">
                 <option value="">All Ratings</option>
                 <option value="Excellent">Excellent</option>
                 <option value="Good">Good</option>
@@ -399,10 +429,10 @@ export default function HumanResources() {
           </div>
         </div>
 
-        <main className="p-6 overflow-y-auto">
+        <main className="p-8 overflow-y-auto">
           {activeTab === "employees" && (
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-700 mb-4">
+            <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition">
+              <h2 className="text-xl font-bold text-indigo-900 mb-4">
                 Employee Directory
               </h2>
 
@@ -410,7 +440,7 @@ export default function HumanResources() {
                 <div className="overflow-x-auto">
                   <table className="min-w-full text-sm border-collapse">
                     <thead>
-                      <tr className="bg-gray-50 text-gray-600 font-semibold text-left">
+                      <tr className="bg-indigo-50 text-indigo-800 font-semibold text-left">
                         <th className="p-3 border-b">Profile</th>
                         <th className="p-3 border-b">Name</th>
                         <th className="p-3 border-b">Role</th>
@@ -424,7 +454,7 @@ export default function HumanResources() {
                       {employees.map((emp, idx) => (
                         <tr
                           key={idx}
-                          className="border-b hover:bg-gray-50 transition-colors duration-200"
+                          className="border-b hover:bg-sky-50 transition duration-200"
                         >
                           <td className="p-3">
                             <img
@@ -435,22 +465,22 @@ export default function HumanResources() {
                                 )}&background=random`
                               }
                               alt={emp.name}
-                              className="w-10 h-10 rounded-full object-cover border"
+                              className="w-10 h-10 rounded-full object-cover border border-sky-300"
                             />
                           </td>
 
-                          <td className="p-3 font-medium text-gray-800">
+                          <td className="p-3 font-semibold text-gray-800">
                             {emp.name || "-"}
                           </td>
 
                           <td className="p-3">
-                            <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
+                            <span className="bg-sky-100 text-sky-700 px-3 py-1 rounded-full text-xs font-semibold shadow-sm">
                               {emp.role || "—"}
                             </span>
                           </td>
 
                           <td className="p-3">
-                            <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium">
+                            <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium shadow-sm">
                               {emp.department || "—"}
                             </span>
                           </td>
@@ -460,7 +490,7 @@ export default function HumanResources() {
                           </td>
 
                           <td className="p-3 text-center">
-                            <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
+                            <span className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold shadow-sm">
                               Active
                             </span>
                           </td>
@@ -469,7 +499,7 @@ export default function HumanResources() {
                               <button
                                 onClick={() => handleViewEmployee(emp._id)}
                                 title="View Details"
-                                className="flex items-center gap-1 bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1 rounded-full text-xs font-semibold transition duration-200"
+                                className="flex items-center gap-1 bg-sky-100 text-sky-700 hover:bg-sky-200 px-3 py-1 rounded-full text-xs font-semibold transition duration-200"
                               >
                                 <FiUser size={12} />
                                 View
@@ -498,9 +528,10 @@ export default function HumanResources() {
             </div>
           )}
 
+          {/* === Leave Management === */}
           {activeTab === "leave" && (
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-700 mb-4">
+            <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition">
+              <h2 className="text-xl font-bold text-indigo-900 mb-4">
                 Leave Requests
               </h2>
 
@@ -508,11 +539,11 @@ export default function HumanResources() {
                 <div className="overflow-x-auto">
                   <table className="min-w-full text-sm border-collapse">
                     <thead>
-                      <tr className="text-gray-600 bg-gray-50 font-semibold text-left">
+                      <tr className="bg-indigo-50 text-indigo-800 font-semibold text-left">
                         <th className="p-3 border-b">Employee Name</th>
                         <th className="p-3 border-b">Leave Type</th>
-                        <th className="p-3 border-b">Leave From</th>
-                        <th className="p-3 border-b">Leave To</th>
+                        <th className="p-3 border-b">From</th>
+                        <th className="p-3 border-b">To</th>
                         <th className="p-3 border-b text-center">Days</th>
                         <th className="p-3 border-b text-center">Status</th>
                         <th className="p-3 border-b text-center">Actions</th>
@@ -530,7 +561,7 @@ export default function HumanResources() {
                         return (
                           <tr
                             key={i}
-                            className="border-b hover:bg-gray-50 transition duration-200"
+                            className="border-b hover:bg-sky-50 transition duration-200"
                           >
                             <td className="p-3 flex items-center gap-3">
                               <img
@@ -541,7 +572,7 @@ export default function HumanResources() {
                                   )}&background=random`
                                 }
                                 alt={l.employeeId?.name}
-                                className="w-9 h-9 rounded-full object-cover border"
+                                className="w-9 h-9 rounded-full object-cover border border-sky-300"
                               />
                               <div>
                                 <p className="font-semibold text-gray-800">
@@ -555,14 +586,14 @@ export default function HumanResources() {
 
                             <td className="p-3">
                               <span
-                                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                className={`px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
                                   l.leaveType === "Sick Leave"
-                                    ? "bg-green-100 text-green-700"
+                                    ? "bg-emerald-100 text-emerald-700"
                                     : l.leaveType === "Casual Leave"
-                                    ? "bg-yellow-100 text-yellow-700"
+                                    ? "bg-amber-100 text-amber-700"
                                     : l.leaveType === "Maternity"
                                     ? "bg-pink-100 text-pink-700"
-                                    : "bg-blue-100 text-blue-700"
+                                    : "bg-sky-100 text-sky-700"
                                 }`}
                               >
                                 {l.leaveType}
@@ -582,12 +613,12 @@ export default function HumanResources() {
 
                             <td className="p-3 text-center">
                               <span
-                                className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm ${
                                   l.status === "Approved"
-                                    ? "bg-green-100 text-green-700"
+                                    ? "bg-emerald-100 text-emerald-700"
                                     : l.status === "Rejected"
                                     ? "bg-red-100 text-red-700"
-                                    : "bg-yellow-100 text-yellow-700"
+                                    : "bg-amber-100 text-amber-700"
                                 }`}
                               >
                                 {l.status}
@@ -601,11 +632,11 @@ export default function HumanResources() {
                                     handleStatusChange(l._id, "Approved")
                                   }
                                   className={`px-4 py-1.5 text-xs font-semibold rounded-full border transition duration-200 
-        ${
-          l.status === "Approved"
-            ? "text-white bg-green-600 border-green-600"
-            : "text-green-600 border-green-500 hover:bg-green-50"
-        }`}
+                            ${
+                              l.status === "Approved"
+                                ? "text-white bg-emerald-600 border-emerald-600"
+                                : "text-emerald-600 border-emerald-500 hover:bg-emerald-50"
+                            }`}
                                 >
                                   Approve
                                 </button>
@@ -615,11 +646,11 @@ export default function HumanResources() {
                                     handleStatusChange(l._id, "Rejected")
                                   }
                                   className={`px-4 py-1.5 text-xs font-semibold rounded-full border transition duration-200 
-        ${
-          l.status === "Rejected"
-            ? "text-white bg-red-600 border-red-600"
-            : "text-red-600 border-red-500 hover:bg-red-50"
-        }`}
+                            ${
+                              l.status === "Rejected"
+                                ? "text-white bg-red-600 border-red-600"
+                                : "text-red-600 border-red-500 hover:bg-red-50"
+                            }`}
                                 >
                                   Reject
                                 </button>
@@ -638,35 +669,99 @@ export default function HumanResources() {
               )}
             </div>
           )}
-
           {activeTab === "attendance" && (
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-              <h2 className="font-semibold mb-3 text-gray-700">
-                Attendance Records
+            <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition">
+              <h2 className="text-xl font-bold text-indigo-900 mb-4">
+                Employee Attendance
               </h2>
-              <ul className="divide-y divide-gray-100">
-                {attendance.map((a, i) => (
-                  <li key={i} className="py-2 flex justify-between">
-                    <span>{a.name}</span>
-                    <span className="text-gray-500">{a.date}</span>
-                    <span
-                      className={`${
-                        a.status === "Present"
-                          ? "text-green-600"
-                          : "text-red-500"
-                      } font-medium`}
-                    >
-                      {a.status}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+
+              {attendance.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm border-collapse">
+                    <thead>
+                      <tr className="bg-indigo-50 text-indigo-800 font-semibold text-left">
+                        <th className="p-3 border-b">Employee Name</th>
+                        <th className="p-3 border-b">Check-In</th>
+                        <th className="p-3 border-b">Check-Out</th>
+                        <th className="p-3 border-b text-center">
+                          Worked Hours
+                        </th>
+                        <th className="p-3 border-b text-center">Status</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {attendance.map((a, i) => (
+                        <tr
+                          key={i}
+                          className="border-b hover:bg-sky-50 transition duration-200"
+                        >
+                          <td className="p-3 flex items-center gap-3">
+                            <img
+                              src={
+                                a.employeeId?.avatar ||
+                                `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                  a.name || "User"
+                                )}&background=random`
+                              }
+                              alt={a.name}
+                              className="w-9 h-9 rounded-full object-cover border border-sky-300"
+                            />
+                            <div>
+                              <p className="font-semibold text-gray-800">
+                                {a.name}
+                              </p>
+                              <p className="text-xs text-gray-500">{a.email}</p>
+                            </div>
+                          </td>
+
+                          <td className="p-3 text-gray-700">
+                            {a.todayAttendance?.checkIn
+                              ? new Date(
+                                  a.todayAttendance.checkIn
+                                ).toLocaleTimeString()
+                              : "-"}
+                          </td>
+                          <td className="p-3 text-gray-700">
+                            {a.todayAttendance?.checkOut
+                              ? new Date(
+                                  a.todayAttendance.checkOut
+                                ).toLocaleTimeString()
+                              : "-"}
+                          </td>
+                          <td className="p-3 text-center font-semibold text-gray-800">
+                            {a.todayAttendance?.workedHours || "-"}
+                          </td>
+                          <td className="p-3 text-center">
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm ${
+                                a.todayAttendance?.status === "Present"
+                                  ? "bg-emerald-100 text-emerald-700"
+                                  : a.todayAttendance?.status === "On Leave"
+                                  ? "bg-amber-100 text-amber-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {a.todayAttendance?.status || "Not Checked In"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-6">
+                  No attendance records found.
+                </p>
+              )}
             </div>
           )}
 
+          {/* === Payroll Management === */}
           {activeTab === "payroll" && (
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-700 mb-4">
+            <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition">
+              <h2 className="text-xl font-bold text-indigo-900 mb-4">
                 Payroll Management
               </h2>
 
@@ -674,7 +769,7 @@ export default function HumanResources() {
                 <div className="overflow-x-auto">
                   <table className="min-w-full text-sm border-collapse">
                     <thead>
-                      <tr className="bg-gray-50 text-gray-600 font-semibold text-left">
+                      <tr className="bg-indigo-50 text-indigo-800 font-semibold text-left">
                         <th className="p-3 border-b">Employee</th>
                         <th className="p-3 border-b">Department</th>
                         <th className="p-3 border-b">Month</th>
@@ -693,9 +788,8 @@ export default function HumanResources() {
                       {payrolls.map((p, i) => (
                         <tr
                           key={i}
-                          className="border-b hover:bg-gray-50 transition-colors duration-200"
+                          className="border-b hover:bg-sky-50 transition-colors duration-200"
                         >
-                          {/* Employee Info */}
                           <td className="p-3 flex items-center gap-3">
                             <img
                               src={
@@ -705,10 +799,10 @@ export default function HumanResources() {
                                 )}&background=random`
                               }
                               alt={p.name}
-                              className="w-9 h-9 rounded-full object-cover border"
+                              className="w-9 h-9 rounded-full object-cover border border-sky-300"
                             />
                             <div>
-                              <p className="font-medium text-gray-800">
+                              <p className="font-semibold text-gray-800">
                                 {p.name}
                               </p>
                               <p className="text-xs text-gray-500">{p.role}</p>
@@ -720,28 +814,26 @@ export default function HumanResources() {
                           </td>
                           <td className="p-3 text-gray-700">{p.month}</td>
 
-                          {/* Salary Columns */}
                           <td className="p-3 text-right text-gray-700">
                             ${p.baseSalary?.toLocaleString() || 0}
                           </td>
-                          <td className="p-3 text-right text-green-600">
+                          <td className="p-3 text-right text-emerald-600">
                             +${p.bonus?.toLocaleString() || 0}
                           </td>
                           <td className="p-3 text-right text-red-600">
                             -${p.deductions?.toLocaleString() || 0}
                           </td>
-                          <td className="p-3 text-right font-semibold text-gray-900">
+                          <td className="p-3 text-right font-bold text-indigo-900">
                             ${p.netSalary?.toLocaleString() || p.baseSalary}
                           </td>
 
-                          {/* Status Badge */}
                           <td className="p-3 text-center">
                             <span
-                              className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                              className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm ${
                                 p.paymentStatus === "Paid"
-                                  ? "bg-green-100 text-green-700"
+                                  ? "bg-emerald-100 text-emerald-700"
                                   : p.paymentStatus === "Pending"
-                                  ? "bg-yellow-100 text-yellow-700"
+                                  ? "bg-amber-100 text-amber-700"
                                   : "bg-red-100 text-red-700"
                               }`}
                             >
@@ -749,7 +841,6 @@ export default function HumanResources() {
                             </span>
                           </td>
 
-                          {/* Dropdown for Updating */}
                           <td className="p-3 text-center">
                             <select
                               value={p.paymentStatus}
@@ -760,7 +851,7 @@ export default function HumanResources() {
                                   e.target.value
                                 )
                               }
-                              className="border border-gray-300 rounded-lg px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                              className="border border-gray-300 rounded-lg px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-sky-600"
                             >
                               <option value="Pending">Pending</option>
                               <option value="Paid">Paid</option>
@@ -780,19 +871,20 @@ export default function HumanResources() {
             </div>
           )}
 
+          {/* === Recruitment === */}
           {activeTab === "recruitment" && (
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-              <h2 className="font-semibold mb-3 text-gray-700">
+            <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition">
+              <h2 className="text-xl font-bold text-indigo-900 mb-3">
                 Open Positions
               </h2>
               {recruitment.map((r, i) => (
                 <div
                   key={i}
-                  className="py-2 border-b flex justify-between text-sm"
+                  className="py-2 border-b border-gray-100 flex justify-between text-sm hover:bg-sky-50 px-2 rounded transition"
                 >
                   <span>{r.position}</span>
                   <span className="text-gray-500">{r.status}</span>
-                  <span className="font-semibold">
+                  <span className="font-semibold text-indigo-900">
                     {r.applicants} applicants
                   </span>
                 </div>
@@ -800,21 +892,20 @@ export default function HumanResources() {
             </div>
           )}
 
+          {/* === Performance === */}
           {activeTab === "performance" && (
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-              <h2 className="font-semibold mb-3 text-gray-700">
+            <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition">
+              <h2 className="text-xl font-bold text-indigo-900 mb-3">
                 Performance Reviews
               </h2>
               {performance.map((p, i) => (
                 <div
                   key={i}
-                  className="py-2 border-b flex justify-between text-sm"
+                  className="py-2 border-b border-gray-100 flex justify-between text-sm hover:bg-sky-50 px-2 rounded transition"
                 >
                   <span>{p.name}</span>
                   <span className="text-gray-500">{p.rating}</span>
-                  <span className="font-semibold text-blue-600">
-                    {p.score}/10
-                  </span>
+                  <span className="font-bold text-sky-700">{p.score}/10</span>
                 </div>
               ))}
             </div>
@@ -823,29 +914,31 @@ export default function HumanResources() {
       </div>
 
       <div
-        className={`fixed top-0 right-0 h-full w-[420px] bg-white shadow-2xl transform transition-transform duration-300 z-50 overflow-y-auto ${
+        className={`fixed top-0 right-0 h-full w-[420px] bg-white shadow-2xl rounded-l-2xl transform transition-transform duration-300 z-50 overflow-y-auto ${
           isDrawerOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
-          <h2 className="text-lg font-semibold text-gray-800">Add Employee</h2>
-          <button
+        {/* Header */}
+        <div className="flex justify-between items-center border-b border-gray-100 px-6 py-5 bg-indigo-50">
+          <h2 className="text-xl font-bold text-indigo-900">Add Employee</h2>
+          <FiX
+            className="text-gray-500 cursor-pointer hover:text-red-500 transition"
+            size={22}
             onClick={() => setIsDrawerOpen(false)}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <FiX size={20} />
-          </button>
+          />
         </div>
 
+        {/* Form Body */}
         <div className="p-6">
           <form
             onSubmit={handleSubmit}
             className="space-y-5"
             encType="multipart/form-data"
           >
+            {/* Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Full Name
+              <label className="block text-sm font-semibold text-indigo-900 mb-1">
+                Full Name <span className="text-red-500">*</span>
               </label>
               <input
                 name="name"
@@ -853,14 +946,15 @@ export default function HumanResources() {
                 onChange={handleChange}
                 type="text"
                 placeholder="Enter full name"
-                className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-600 transition"
                 required
               />
             </div>
 
+            {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Email
+              <label className="block text-sm font-semibold text-indigo-900 mb-1">
+                Email <span className="text-red-500">*</span>
               </label>
               <input
                 name="email"
@@ -868,14 +962,15 @@ export default function HumanResources() {
                 onChange={handleChange}
                 type="email"
                 placeholder="Enter email address"
-                className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-600 transition"
                 required
               />
             </div>
 
+            {/* Phone + DOB */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-semibold text-indigo-900 mb-1">
                   Phone
                 </label>
                 <input
@@ -884,12 +979,12 @@ export default function HumanResources() {
                   onChange={handleChange}
                   type="tel"
                   placeholder="+92 300 1234567"
-                  className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-600 transition"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-semibold text-indigo-900 mb-1">
                   Date of Birth
                 </label>
                 <input
@@ -897,20 +992,21 @@ export default function HumanResources() {
                   value={formData.dob}
                   onChange={handleChange}
                   type="date"
-                  className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-600 transition"
                 />
               </div>
             </div>
 
+            {/* Department */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-semibold text-indigo-900 mb-1">
                 Department
               </label>
               <select
                 name="department"
                 value={formData.department}
                 onChange={handleChange}
-                className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-600 transition"
               >
                 <option value="">Select Department</option>
                 <option value="Frontend Development">
@@ -937,9 +1033,10 @@ export default function HumanResources() {
               </select>
             </div>
 
+            {/* Role + Joining Date */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-semibold text-indigo-900 mb-1">
                   Role / Position
                 </label>
                 <input
@@ -948,11 +1045,11 @@ export default function HumanResources() {
                   onChange={handleChange}
                   type="text"
                   placeholder="e.g. Frontend Developer"
-                  className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-600 transition"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-semibold text-indigo-900 mb-1">
                   Joining Date
                 </label>
                 <input
@@ -960,13 +1057,14 @@ export default function HumanResources() {
                   value={formData.joiningDate}
                   onChange={handleChange}
                   type="date"
-                  className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-600 transition"
                 />
               </div>
             </div>
 
+            {/* Salary */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-semibold text-indigo-900 mb-1">
                 Salary (Monthly)
               </label>
               <input
@@ -975,13 +1073,14 @@ export default function HumanResources() {
                 onChange={handleChange}
                 type="number"
                 placeholder="e.g. 50000"
-                className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-600 transition"
               />
             </div>
 
+            {/* Avatar Upload */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Profile Picture (Single)
+              <label className="block text-sm font-semibold text-indigo-900 mb-1">
+                Profile Picture
               </label>
               <input
                 name="avatar"
@@ -990,16 +1089,18 @@ export default function HumanResources() {
                 }
                 type="file"
                 accept="image/*"
-                className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:bg-blue-50 file:text-blue-600"
+                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm bg-white 
+            file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 
+            file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 transition"
               />
             </div>
 
+            {/* Documents Upload */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-semibold text-indigo-900 mb-1">
                 Upload Documents (Multiple)
               </label>
 
-              {/* Input Field */}
               <input
                 name="documents"
                 multiple
@@ -1012,9 +1113,9 @@ export default function HumanResources() {
                 }}
                 type="file"
                 accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white 
-      file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 
-      file:bg-green-50 file:text-green-600 hover:file:bg-green-100"
+                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm bg-white 
+            file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 
+            file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 transition"
               />
 
               {formData.documents && formData.documents.length > 0 && (
@@ -1022,16 +1123,16 @@ export default function HumanResources() {
                   {formData.documents.map((file, index) => (
                     <div
                       key={index}
-                      className="flex items-center bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium"
+                      className="flex items-center bg-sky-50 text-sky-800 px-3 py-1 rounded-full text-xs font-medium border border-sky-100 shadow-sm"
                     >
                       {file.type.startsWith("image/") ? (
                         <img
                           src={URL.createObjectURL(file)}
                           alt={file.name}
-                          className="w-6 h-6 rounded-full mr-2 object-cover border"
+                          className="w-6 h-6 rounded-full mr-2 object-cover border border-sky-200"
                         />
                       ) : (
-                        <span className="bg-green-200 text-green-800 px-2 py-0.5 rounded-full mr-2">
+                        <span className="bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full mr-2">
                           📄
                         </span>
                       )}
@@ -1048,7 +1149,7 @@ export default function HumanResources() {
                           );
                           setFormData({ ...formData, documents: updated });
                         }}
-                        className="ml-2 text-red-500 hover:text-red-700"
+                        className="ml-2 text-red-500 hover:text-red-700 transition"
                         title="Remove file"
                       >
                         <FiX size={14} />
@@ -1063,34 +1164,34 @@ export default function HumanResources() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
+              className={`w-full bg-sky-600 hover:bg-sky-700 text-white py-3 rounded-xl text-sm font-bold transition disabled:opacity-50 shadow-lg`}
             >
               {loading ? "Saving..." : "Save Employee"}
             </button>
           </form>
         </div>
       </div>
-      {/* 👁️ Employee View Drawer */}
+
       <div
-        className={`fixed top-0 right-0 h-full w-[450px] bg-white shadow-2xl transform transition-transform duration-300 z-50 overflow-y-auto ${
+        className={`fixed top-0 right-0 h-full w-[450px] bg-white shadow-2xl rounded-l-2xl transform transition-transform duration-300 z-50 overflow-y-auto ${
           isViewOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Header */}
-        <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
-          <h2 className="text-lg font-semibold text-gray-800">
+        <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100 sticky top-0 bg-indigo-50 z-10">
+          <h2 className="text-xl font-bold text-indigo-900">
             Employee Profile
           </h2>
           <button
             onClick={() => setIsViewOpen(false)}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 hover:text-red-500 transition"
           >
-            <FiX size={20} />
+            <FiX size={22} />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200">
+        <div className="flex border-b border-gray-100 bg-white">
           {[
             { key: "profile", label: "Profile" },
             { key: "payroll", label: "Payroll" },
@@ -1099,10 +1200,10 @@ export default function HumanResources() {
             <button
               key={tab.key}
               onClick={() => setActiveViewTab(tab.key)}
-              className={`flex-1 py-3 text-sm font-medium ${
+              className={`flex-1 py-3 text-sm font-semibold transition ${
                 activeViewTab === tab.key
-                  ? "border-b-2 border-blue-600 text-blue-600"
-                  : "text-gray-500 hover:text-blue-600"
+                  ? "border-b-2 border-sky-600 text-sky-700 bg-sky-50"
+                  : "text-gray-500 hover:text-sky-700 hover:bg-sky-50"
               }`}
             >
               {tab.label}
@@ -1117,7 +1218,7 @@ export default function HumanResources() {
               {/* 🧍 Profile Tab */}
               {activeViewTab === "profile" && (
                 <div className="space-y-6">
-                  {/* 🧍 Profile Header */}
+                  {/* Profile Header */}
                   <div className="flex flex-col items-center text-center">
                     <img
                       src={
@@ -1127,10 +1228,9 @@ export default function HumanResources() {
                         )}&background=random`
                       }
                       alt={selectedEmployee.name}
-                      className="w-24 h-24 rounded-full object-cover border mb-3 shadow-sm"
+                      className="w-24 h-24 rounded-full object-cover border-4 border-sky-200 mb-3 shadow-md"
                     />
-
-                    <h3 className="text-lg font-semibold text-gray-800">
+                    <h3 className="text-lg font-bold text-indigo-900">
                       {selectedEmployee.name}
                     </h3>
                     <p className="text-sm text-gray-500">
@@ -1138,11 +1238,11 @@ export default function HumanResources() {
                     </p>
 
                     <span
-                      className={`mt-2 inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                      className={`mt-2 inline-block px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
                         selectedEmployee.status === "Active"
-                          ? "bg-green-100 text-green-700"
+                          ? "bg-emerald-100 text-emerald-700"
                           : selectedEmployee.status === "On Leave"
-                          ? "bg-yellow-100 text-yellow-700"
+                          ? "bg-amber-100 text-amber-700"
                           : selectedEmployee.status === "Inactive"
                           ? "bg-gray-100 text-gray-700"
                           : "bg-red-100 text-red-700"
@@ -1152,18 +1252,18 @@ export default function HumanResources() {
                     </span>
                   </div>
 
+                  {/* Details Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-                    {/*  */}
-                    <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 px-3 py-2 rounded-lg">
-                      <FiMail className="text-blue-600" />
+                    <div className="flex items-center gap-2 bg-sky-50 border border-sky-100 px-3 py-2 rounded-lg shadow-sm">
+                      <FiMail className="text-sky-600" />
                       <div className="text-xs text-gray-700 truncate">
-                        <p className="font-semibold text-blue-700">Email</p>
+                        <p className="font-semibold text-sky-700">Email</p>
                         <p>{selectedEmployee.email}</p>
                       </div>
                     </div>
 
                     {selectedEmployee.phone && (
-                      <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-lg">
+                      <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-lg shadow-sm">
                         <FiPhone className="text-purple-600" />
                         <div className="text-xs text-gray-700">
                           <p className="font-semibold text-purple-700">Phone</p>
@@ -1173,10 +1273,10 @@ export default function HumanResources() {
                     )}
 
                     {selectedEmployee.department && (
-                      <div className="flex items-center gap-2 bg-teal-50 border border-teal-100 px-3 py-2 rounded-lg">
-                        <FiBriefcase className="text-teal-600" />
+                      <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-100 px-3 py-2 rounded-lg shadow-sm">
+                        <FiBriefcase className="text-emerald-600" />
                         <div className="text-xs text-gray-700">
-                          <p className="font-semibold text-teal-700">
+                          <p className="font-semibold text-emerald-700">
                             Department
                           </p>
                           <p>{selectedEmployee.department}</p>
@@ -1184,9 +1284,8 @@ export default function HumanResources() {
                       </div>
                     )}
 
-                    {/* Joining Date */}
                     {selectedEmployee.joiningDate && (
-                      <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-100 px-3 py-2 rounded-lg">
+                      <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-100 px-3 py-2 rounded-lg shadow-sm">
                         <FiCalendar className="text-indigo-600" />
                         <div className="text-xs text-gray-700">
                           <p className="font-semibold text-indigo-700">
@@ -1201,22 +1300,18 @@ export default function HumanResources() {
                       </div>
                     )}
 
-                    {/* Salary */}
                     {selectedEmployee.salary && (
-                      <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-100 px-3 py-2 rounded-lg">
-                        <FiDollarSign className="text-yellow-600" />
+                      <div className="flex items-center gap-2 bg-amber-50 border border-amber-100 px-3 py-2 rounded-lg shadow-sm">
+                        <FiDollarSign className="text-amber-600" />
                         <div className="text-xs text-gray-700">
-                          <p className="font-semibold text-yellow-700">
-                            Salary
-                          </p>
+                          <p className="font-semibold text-amber-700">Salary</p>
                           <p>${selectedEmployee.salary.toLocaleString()}</p>
                         </div>
                       </div>
                     )}
 
-                    {/* DOB */}
                     {selectedEmployee.dob && (
-                      <div className="flex items-center gap-2 bg-pink-50 border border-pink-100 px-3 py-2 rounded-lg">
+                      <div className="flex items-center gap-2 bg-pink-50 border border-pink-100 px-3 py-2 rounded-lg shadow-sm">
                         <FiUser className="text-pink-600" />
                         <div className="text-xs text-gray-700">
                           <p className="font-semibold text-pink-700">
@@ -1232,27 +1327,27 @@ export default function HumanResources() {
                     )}
                   </div>
 
-                  {/* Divider + Quick Summary */}
+                  {/* Divider + Summary */}
                   <div className="border-t border-gray-200 pt-4 mt-4">
-                    <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                    <h4 className="text-sm font-bold text-indigo-900 mb-2">
                       Quick Summary
                     </h4>
-                    <ul className="text-sm text-gray-600 space-y-1">
+                    <ul className="text-sm text-gray-700 space-y-1">
                       <li className="flex items-center gap-2">
-                        <FiUser className="text-blue-600" />
+                        <FiUser className="text-sky-600" />
                         <span>
                           <strong>Role:</strong> {selectedEmployee.role}
                         </span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <FiBriefcase className="text-teal-600" />
+                        <FiBriefcase className="text-emerald-600" />
                         <span>
                           <strong>Department:</strong>{" "}
                           {selectedEmployee.department || "—"}
                         </span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <FiStar className="text-yellow-600" />
+                        <FiStar className="text-amber-600" />
                         <span>
                           <strong>Status:</strong> {selectedEmployee.status}
                         </span>
@@ -1270,10 +1365,10 @@ export default function HumanResources() {
                       {selectedEmployee.payrollHistory.map((p, i) => (
                         <div
                           key={i}
-                          className="border border-gray-200 rounded-lg p-3 flex justify-between items-center hover:bg-gray-50 transition"
+                          className="border border-gray-100 rounded-xl p-3 flex justify-between items-center hover:bg-sky-50 transition shadow-sm"
                         >
                           <div>
-                            <p className="font-medium text-gray-800">
+                            <p className="font-semibold text-indigo-900">
                               {p.month}
                             </p>
                             <p className="text-xs text-gray-500">
@@ -1281,11 +1376,11 @@ export default function HumanResources() {
                             </p>
                           </div>
                           <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm ${
                               p.paymentStatus === "Paid"
-                                ? "bg-green-100 text-green-700"
+                                ? "bg-emerald-100 text-emerald-700"
                                 : p.paymentStatus === "Pending"
-                                ? "bg-yellow-100 text-yellow-700"
+                                ? "bg-amber-100 text-amber-700"
                                 : "bg-red-100 text-red-700"
                             }`}
                           >
@@ -1310,10 +1405,10 @@ export default function HumanResources() {
                       {selectedEmployee.documents.map((doc, i) => (
                         <div
                           key={i}
-                          className="flex flex-col items-center bg-gray-50 rounded-lg p-3 hover:shadow cursor-pointer transition"
+                          className="flex flex-col items-center bg-sky-50 border border-sky-100 rounded-xl p-3 hover:shadow-md cursor-pointer transition"
                           onClick={() => setSelectedDoc(doc)}
                         >
-                          <div className="w-12 h-12 bg-white flex items-center justify-center border rounded mb-2">
+                          <div className="w-12 h-12 bg-white flex items-center justify-center border rounded-lg mb-2 shadow-sm">
                             {doc.match(/\.(jpg|jpeg|png)$/i) ? (
                               <img
                                 src={doc}
@@ -1321,7 +1416,7 @@ export default function HumanResources() {
                                 className="w-10 h-10 object-cover rounded"
                               />
                             ) : (
-                              <span className="text-lg">📄</span>
+                              <span className="text-lg text-sky-700">📄</span>
                             )}
                           </div>
                           <p className="text-xs text-gray-700 text-center truncate w-full">
@@ -1346,7 +1441,7 @@ export default function HumanResources() {
         {/* 📄 Document Preview Modal */}
         {selectedDoc && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-[999] flex items-center justify-center">
-            <div className="bg-white w-[80%] h-[80%] rounded-xl shadow-2xl relative p-4">
+            <div className="bg-white w-[80%] h-[80%] rounded-2xl shadow-2xl relative p-4">
               <button
                 onClick={() => setSelectedDoc(null)}
                 className="absolute top-3 right-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full p-1"
@@ -1358,13 +1453,13 @@ export default function HumanResources() {
                 <img
                   src={selectedDoc}
                   alt="Document Preview"
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain rounded-lg"
                 />
               ) : (
                 <iframe
                   src={selectedDoc}
                   title="Document"
-                  className="w-full h-full rounded"
+                  className="w-full h-full rounded-lg"
                 ></iframe>
               )}
 
@@ -1374,13 +1469,13 @@ export default function HumanResources() {
                   download
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                  className="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md"
                 >
                   Download
                 </a>
                 <button
                   onClick={() => window.print()}
-                  className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium"
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm font-semibold"
                 >
                   Print
                 </button>
