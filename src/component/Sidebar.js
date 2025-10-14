@@ -366,7 +366,6 @@ export default function Sidebar() {
   const [role, setRole] = useState(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  // ✅ Decode role from token (Keep this logic)
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -380,9 +379,8 @@ export default function Sidebar() {
     }
   }, []);
 
-  // ✅ Define menu access by role (Keep this data)
   const allMenuItems = [
-    { name: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/dashboard", access: ["admin", "hr", "manager", "user"] },
+    { name: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/dashboard", access: ["admin", "hr", "manager", "employee"] },
     { name: "Projects", icon: <FolderKanban size={18} />, path: "/taskbar", access: ["admin", "manager"] },
     { name: "HR", icon: <Users size={18} />, path: "/human-resources", access: ["admin", "hr"] },
     { name: "CRM", icon: <Briefcase size={18} />, path: "/crm", access: ["admin"] },

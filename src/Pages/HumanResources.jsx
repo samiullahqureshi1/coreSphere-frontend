@@ -13,6 +13,7 @@ import {
   FiPhone,
   FiMail,
 } from "react-icons/fi";
+import axios from "axios";
 
 export default function HumanResources() {
   const [activeTab, setActiveTab] = useState("employees");
@@ -252,10 +253,26 @@ export default function HumanResources() {
     }
   };
 
-  const attendance = [
-    { name: "John Smith", date: "Oct 12, 2025", status: "Present" },
-    { name: "Mary Adams", date: "Oct 12, 2025", status: "Absent" },
-  ];
+  const [attendance, setAttendance] = useState([]);
+
+  const fetchAttendance = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const { data } = await axios.get(
+        "https://core-sphere-backend.vercel.app/Employee/getAllEmployeeAttendence",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setAttendance(data.attendance);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "attendance") fetchAttendance();
+  }, [activeTab]);
 
   const payroll = [
     { name: "Alice Johnson", month: "September 2025", salary: "$4,500" },
@@ -648,6 +665,94 @@ export default function HumanResources() {
               ) : (
                 <p className="text-gray-500 text-center py-6">
                   No leave requests found.
+                </p>
+              )}
+            </div>
+          )}
+          {activeTab === "attendance" && (
+            <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition">
+              <h2 className="text-xl font-bold text-indigo-900 mb-4">
+                Employee Attendance
+              </h2>
+
+              {attendance.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm border-collapse">
+                    <thead>
+                      <tr className="bg-indigo-50 text-indigo-800 font-semibold text-left">
+                        <th className="p-3 border-b">Employee Name</th>
+                        <th className="p-3 border-b">Check-In</th>
+                        <th className="p-3 border-b">Check-Out</th>
+                        <th className="p-3 border-b text-center">
+                          Worked Hours
+                        </th>
+                        <th className="p-3 border-b text-center">Status</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {attendance.map((a, i) => (
+                        <tr
+                          key={i}
+                          className="border-b hover:bg-sky-50 transition duration-200"
+                        >
+                          <td className="p-3 flex items-center gap-3">
+                            <img
+                              src={
+                                a.employeeId?.avatar ||
+                                `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                  a.name || "User"
+                                )}&background=random`
+                              }
+                              alt={a.name}
+                              className="w-9 h-9 rounded-full object-cover border border-sky-300"
+                            />
+                            <div>
+                              <p className="font-semibold text-gray-800">
+                                {a.name}
+                              </p>
+                              <p className="text-xs text-gray-500">{a.email}</p>
+                            </div>
+                          </td>
+
+                          <td className="p-3 text-gray-700">
+                            {a.todayAttendance?.checkIn
+                              ? new Date(
+                                  a.todayAttendance.checkIn
+                                ).toLocaleTimeString()
+                              : "-"}
+                          </td>
+                          <td className="p-3 text-gray-700">
+                            {a.todayAttendance?.checkOut
+                              ? new Date(
+                                  a.todayAttendance.checkOut
+                                ).toLocaleTimeString()
+                              : "-"}
+                          </td>
+                          <td className="p-3 text-center font-semibold text-gray-800">
+                            {a.todayAttendance?.workedHours || "-"}
+                          </td>
+                          <td className="p-3 text-center">
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm ${
+                                a.todayAttendance?.status === "Present"
+                                  ? "bg-emerald-100 text-emerald-700"
+                                  : a.todayAttendance?.status === "On Leave"
+                                  ? "bg-amber-100 text-amber-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {a.todayAttendance?.status || "Not Checked In"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-6">
+                  No attendance records found.
                 </p>
               )}
             </div>

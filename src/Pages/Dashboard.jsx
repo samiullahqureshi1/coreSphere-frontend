@@ -1,365 +1,3 @@
-// import { useEffect, useState } from "react";
-// import { jwtDecode } from "jwt-decode";
-// import Sidebar from "../component/Sidebar";
-// import {
-//   FiClipboard,
-//   FiDollarSign,
-//   FiUsers,
-//   FiCheckCircle,
-//   FiBell,
-//   FiSearch,
-//   FiUserCheck,
-//   FiCalendar,
-//   FiTrendingUp,
-//   FiBarChart2,
-// } from "react-icons/fi";
-// import {
-//   BarChart,
-//   PieChart,
-//   Pie,
-//   Bar,
-//   XAxis,
-//   YAxis,
-//   Tooltip,
-//   CartesianGrid,
-//   ResponsiveContainer,
-// } from "recharts";
-// import EmployeeLeaveForm from "../component/EmployeeLeaveForm";
-
-// export default function Dashboard() {
-//   const [user, setUser] = useState(null);
-//   const [showLeaveForm, setShowLeaveForm] = useState(false);
-
-//   const [announcements, setAnnouncements] = useState([
-//     {
-//       title: "Holiday Notice",
-//       message: "Office will remain closed on 15th October for maintenance.",
-//       date: "2025-10-10",
-//     },
-//     {
-//       title: "New Policy Update",
-//       message: "All employees must update their contact info by next week.",
-//       date: "2025-10-08",
-//     },
-//   ]);
-
-//   useEffect(() => {
-//     const token = localStorage.getItem("token");
-//     if (!token) return;
-
-//     try {
-//       const decoded = jwtDecode(token);
-//       setUser(decoded);
-//     } catch (err) {
-//       console.error("Invalid token:", err);
-//       setUser(null);
-//     }
-//   }, []);
-
-//   if (!user) {
-//     return (
-//       <div className="flex justify-center items-center h-screen text-gray-600">
-//         Loading dashboard...
-//       </div>
-//     );
-//   }
-
-//   const role = user.role?.toLowerCase(); // admin | employee | hr | manager
-
-//   // ===== Sample Data =====
-//   const dealsData = [
-//     { stage: "Lead", value: 1 },
-//     { stage: "Qualified", value: 2 },
-//     { stage: "Proposal", value: 1 },
-//     { stage: "Negotiation", value: 1 },
-//     { stage: "Closed", value: 1 },
-//   ];
-
-//   const tasksData = [
-//     { name: "In Progress", value: 40, fill: "#4285F4" },
-//     { name: "Completed", value: 30, fill: "#FBBC05" },
-//     { name: "Pending", value: 20, fill: "#34A853" },
-//     { name: "Cancelled", value: 10, fill: "#5F6368" },
-//   ];
-
-//   // ===== Shared Top Bar Stats =====
-//   const stats = {
-//     admin: [
-//       { title: "Open Tasks", value: "7", icon: <FiClipboard size={20} /> },
-//       { title: "Pipeline Value", value: "$235,000", icon: <FiDollarSign size={20} /> },
-//       { title: "Total Employees", value: "4", icon: <FiUsers size={20} /> },
-//       { title: "Deals Won", value: "1", icon: <FiCheckCircle size={20} /> },
-//     ],
-//     hr: [
-//       { title: "Active Employees", value: "42", icon: <FiUsers size={20} /> },
-//       { title: "Pending Leaves", value: "5", icon: <FiCalendar size={20} /> },
-//       { title: "New Hires", value: "3", icon: <FiUserCheck size={20} /> },
-//       { title: "Resignations", value: "1", icon: <FiClipboard size={20} /> },
-//     ],
-//     manager: [
-//       { title: "Team Members", value: "8", icon: <FiUsers size={20} /> },
-//       { title: "Active Projects", value: "5", icon: <FiTrendingUp size={20} /> },
-//       { title: "Tasks In Progress", value: "14", icon: <FiClipboard size={20} /> },
-//       { title: "Completed Tasks", value: "9", icon: <FiCheckCircle size={20} /> },
-//     ],
-//   };
-
-//   return (
-//     <div className="flex h-screen bg-gray-50 overflow-hidden">
-//       <Sidebar />
-
-//       <div className="flex-1 flex flex-col">
-//         {/* ===== HEADER ===== */}
-//         <header className="flex justify-between items-center bg-white px-6 py-4 shadow-sm border-b border-gray-200">
-//           <div>
-//             <h1 className="text-2xl font-bold text-gray-800 capitalize">
-//               {role} Dashboard
-//             </h1>
-//             <p className="text-gray-500 text-sm mt-1">
-//               {role === "admin"
-//                 ? "Overview of company performance and metrics."
-//                 : role === "hr"
-//                 ? "Manage employee records, leaves, and recruitment."
-//                 : role === "manager"
-//                 ? "Monitor your team’s performance and projects."
-//                 : "Apply for leave and view company announcements."}
-//             </p>
-//           </div>
-
-//           <div className="flex items-center gap-4">
-//             <FiSearch className="text-gray-600 cursor-pointer" size={18} />
-//             <FiBell className="text-gray-600 cursor-pointer" size={18} />
-//             <img
-//               src={
-//                 user.avatar ||
-//                 `https://ui-avatars.com/api/?name=${encodeURIComponent(
-//                   user.name || "User"
-//                 )}&background=random`
-//               }
-//               alt="Profile"
-//               className="w-10 h-10 rounded-full border border-gray-300 object-cover"
-//             />
-//           </div>
-//         </header>
-
-//         {/* ===== MAIN CONTENT ===== */}
-//         <main className="flex-1 p-6 overflow-y-auto">
-//           {/* ===== ADMIN VIEW ===== */}
-//           {role === "admin" && (
-//             <>
-//               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-//                 {stats.admin.map((item) => (
-//                   <div
-//                     key={item.title}
-//                     className="bg-white shadow-sm hover:shadow-md transition rounded-xl p-5 border border-gray-200"
-//                   >
-//                     <div className="flex justify-between items-center mb-2">
-//                       <h3 className="text-gray-600 text-sm font-medium">
-//                         {item.title}
-//                       </h3>
-//                       <span className="text-gray-400">{item.icon}</span>
-//                     </div>
-//                     <p className="text-2xl font-bold text-gray-900">
-//                       {item.value}
-//                     </p>
-//                   </div>
-//                 ))}
-//               </div>
-
-//               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-//                 <div className="bg-white rounded-xl border p-5">
-//                   <h3 className="text-md font-semibold mb-3 text-gray-800">
-//                     Deals by Stage
-//                   </h3>
-//                   <ResponsiveContainer width="100%" height={250}>
-//                     <BarChart data={dealsData}>
-//                       <CartesianGrid strokeDasharray="3 3" />
-//                       <XAxis dataKey="stage" />
-//                       <YAxis />
-//                       <Tooltip />
-//                       <Bar dataKey="value" fill="#2563EB" />
-//                     </BarChart>
-//                   </ResponsiveContainer>
-//                 </div>
-
-//                 <div className="bg-white rounded-xl border p-5">
-//                   <h3 className="text-md font-semibold mb-3 text-gray-800">
-//                     Tasks by Status
-//                   </h3>
-//                   <ResponsiveContainer width="100%" height={250}>
-//                     <PieChart>
-//                       <Pie
-//                         data={tasksData}
-//                         dataKey="value"
-//                         nameKey="name"
-//                         outerRadius={90}
-//                         label
-//                       />
-//                       <Tooltip />
-//                     </PieChart>
-//                   </ResponsiveContainer>
-//                 </div>
-//               </div>
-//             </>
-//           )}
-
-//           {role === "hr" && (
-//             <div className="space-y-6">
-//               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-//                 {stats.hr.map((item) => (
-//                   <div
-//                     key={item.title}
-//                     className="bg-white rounded-xl border p-5 shadow-sm hover:shadow-md transition"
-//                   >
-//                     <div className="flex justify-between items-center mb-2">
-//                       <h3 className="text-gray-600 text-sm font-medium">
-//                         {item.title}
-//                       </h3>
-//                       <span className="text-gray-400">{item.icon}</span>
-//                     </div>
-//                     <p className="text-2xl font-bold text-gray-900">
-//                       {item.value}
-//                     </p>
-//                   </div>
-//                 ))}
-//               </div>
-
-//               <div className="bg-white rounded-xl shadow-sm border p-6">
-//                 <h3 className="text-lg font-semibold mb-4 text-gray-800">
-//                   Pending Leave Requests
-//                 </h3>
-//                 <p className="text-gray-500 text-sm">
-//                   This section will list all pending leave requests (connect your API here).
-//                 </p>
-//               </div>
-
-//               <div className="bg-white rounded-xl shadow-sm border p-6">
-//                 <h3 className="text-lg font-semibold mb-4 text-gray-800">
-//                   Employee Attendance Overview
-//                 </h3>
-//                 <ResponsiveContainer width="100%" height={250}>
-//                   <BarChart data={dealsData}>
-//                     <CartesianGrid strokeDasharray="3 3" />
-//                     <XAxis dataKey="stage" />
-//                     <YAxis />
-//                     <Tooltip />
-//                     <Bar dataKey="value" fill="#34A853" />
-//                   </BarChart>
-//                 </ResponsiveContainer>
-//               </div>
-//             </div>
-//           )}
-
-//           {role === "manager" && (
-//             <div className="space-y-6">
-//               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-//                 {stats.manager.map((item) => (
-//                   <div
-//                     key={item.title}
-//                     className="bg-white rounded-xl border p-5 shadow-sm hover:shadow-md transition"
-//                   >
-//                     <div className="flex justify-between items-center mb-2">
-//                       <h3 className="text-gray-600 text-sm font-medium">
-//                         {item.title}
-//                       </h3>
-//                       <span className="text-gray-400">{item.icon}</span>
-//                     </div>
-//                     <p className="text-2xl font-bold text-gray-900">
-//                       {item.value}
-//                     </p>
-//                   </div>
-//                 ))}
-//               </div>
-
-//               <div className="bg-white rounded-xl shadow-sm border p-6">
-//                 <h3 className="text-lg font-semibold mb-4 text-gray-800">
-//                   Team Performance Chart
-//                 </h3>
-//                 <ResponsiveContainer width="100%" height={250}>
-//                   <BarChart data={dealsData}>
-//                     <CartesianGrid strokeDasharray="3 3" />
-//                     <XAxis dataKey="stage" />
-//                     <YAxis />
-//                     <Tooltip />
-//                     <Bar dataKey="value" fill="#FBBC05" />
-//                   </BarChart>
-//                 </ResponsiveContainer>
-//               </div>
-//             </div>
-//           )}
-
-//           {role === "employee" && (
-//             <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
-//               <div className="w-full max-w-2xl">
-//                 <div className="bg-white shadow-sm rounded-xl p-6 border border-gray-200 mb-6">
-//                   <div className="flex justify-between items-center mb-3">
-//                     <h3 className="text-lg font-semibold text-gray-800">
-//                       Leave Request
-//                     </h3>
-//                     <button
-//                       onClick={() => setShowLeaveForm(true)}
-//                       className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200"
-//                     >
-//                       Request Leave
-//                     </button>
-//                   </div>
-//                   <p className="text-sm text-gray-600">
-//                     Apply for leave and track your requests below.
-//                   </p>
-//                 </div>
-
-//                 <div className="bg-white shadow-sm rounded-xl p-6 border border-gray-200">
-//                   <h3 className="text-lg font-semibold mb-3 text-gray-800">
-//                     Announcements
-//                   </h3>
-//                   <ul className="space-y-3">
-//                     {announcements.length > 0 ? (
-//                       announcements.map((item, index) => (
-//                         <li
-//                           key={index}
-//                           className="border-b border-gray-100 pb-2 last:border-none"
-//                         >
-//                           <p className="font-medium text-gray-900">
-//                             {item.title}
-//                           </p>
-//                           <p className="text-sm text-gray-600">
-//                             {item.message}
-//                           </p>
-//                           <p className="text-xs text-gray-400 mt-1">
-//                             {new Date(item.date).toLocaleDateString()}
-//                           </p>
-//                         </li>
-//                       ))
-//                     ) : (
-//                       <p className="text-gray-500 text-sm">
-//                         No announcements available.
-//                       </p>
-//                     )}
-//                   </ul>
-//                 </div>
-//               </div>
-//             </div>
-//           )}
-//         </main>
-//       </div>
-
-//       {/* ===== LEAVE FORM MODAL ===== */}
-//       {showLeaveForm && (
-//         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-//           <div className="bg-white rounded-xl shadow-lg w-full max-w-lg relative animate-fadeIn">
-//             <button
-//               onClick={() => setShowLeaveForm(false)}
-//               className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl font-bold"
-//             >
-//               ×
-//             </button>
-//             <EmployeeLeaveForm />
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import Sidebar from "../component/Sidebar";
@@ -406,6 +44,56 @@ export default function Dashboard() {
     },
   ]);
 
+  const [checkedIn, setCheckedIn] = useState(false);
+  const [attendanceStatus, setAttendanceStatus] = useState(null);
+
+  const fetchAttendanceStatus = async () => {
+    const token = localStorage.getItem("token");
+    const employeeId = localStorage.getItem("userid");
+
+    const res = await fetch(
+      `https://core-sphere-backend.vercel.app/Employee/getCheckInStatus/68ece7fad0fa337d518f5a0c`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    const data = await res.json();
+    setAttendanceStatus(data.status); 
+  };
+  useEffect(() => {
+    fetchAttendanceStatus();
+  }, []);
+  const handleCheckInOut = async () => {
+    try {
+      const userId = localStorage.getItem("userid");
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(
+        `https://core-sphere-backend.vercel.app/Employee/updateCheckin/68ece7fad0fa337d518f5a0c`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert(data.message);
+        if (data.status === "checked-in") setCheckedIn(true);
+        else if (data.status === "checked-out") setCheckedIn(false);
+      } else {
+        alert(data.message || "Error processing request");
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      alert("Something went wrong!");
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -436,11 +124,11 @@ export default function Dashboard() {
 
   // ===== Sample Data with Theme Colors =====
   const dealsData = [
-    { stage: "Lead", value: 1, fill: "#3b82f6" },       // Blue-500
+    { stage: "Lead", value: 1, fill: "#3b82f6" }, // Blue-500
     { stage: "Qualified", value: 2, fill: "#f97316" }, // Orange-500
-    { stage: "Proposal", value: 1, fill: "#10b981" },   // Emerald-500
+    { stage: "Proposal", value: 1, fill: "#10b981" }, // Emerald-500
     { stage: "Negotiation", value: 1, fill: "#a855f7" }, // Purple-500
-    { stage: "Closed", value: 1, fill: "#06b6d4" },     // Cyan-500
+    { stage: "Closed", value: 1, fill: "#06b6d4" }, // Cyan-500
   ];
 
   const tasksData = [
@@ -450,27 +138,75 @@ export default function Dashboard() {
     { name: "Cancelled", value: 10, fill: "#ef4444" }, // Red (Danger)
   ];
 
-  const pieColors = tasksData.map(item => item.fill);
+  const pieColors = tasksData.map((item) => item.fill);
 
   // ===== Shared Top Bar Stats (Icons updated to use Primary Color) =====
   const stats = {
     admin: [
-      { title: "Open Tasks", value: "7", icon: <FiClipboard className={primaryColor} size={20} /> },
-      { title: "Pipeline Value", value: "$235,000", icon: <FiDollarSign className={primaryColor} size={20} /> },
-      { title: "Total Employees", value: "4", icon: <FiUsers className={primaryColor} size={20} /> },
-      { title: "Deals Won", value: "1", icon: <FiCheckCircle className="text-emerald-500" size={20} /> },
+      {
+        title: "Open Tasks",
+        value: "7",
+        icon: <FiClipboard className={primaryColor} size={20} />,
+      },
+      {
+        title: "Pipeline Value",
+        value: "$235,000",
+        icon: <FiDollarSign className={primaryColor} size={20} />,
+      },
+      {
+        title: "Total Employees",
+        value: "4",
+        icon: <FiUsers className={primaryColor} size={20} />,
+      },
+      {
+        title: "Deals Won",
+        value: "1",
+        icon: <FiCheckCircle className="text-emerald-500" size={20} />,
+      },
     ],
     hr: [
-      { title: "Active Employees", value: "42", icon: <FiUsers className={primaryColor} size={20} /> },
-      { title: "Pending Leaves", value: "5", icon: <FiCalendar className="text-amber-500" size={20} /> },
-      { title: "New Hires", value: "3", icon: <FiUserCheck className="text-emerald-500" size={20} /> },
-      { title: "Resignations", value: "1", icon: <FiClipboard className="text-red-500" size={20} /> },
+      {
+        title: "Active Employees",
+        value: "42",
+        icon: <FiUsers className={primaryColor} size={20} />,
+      },
+      {
+        title: "Pending Leaves",
+        value: "5",
+        icon: <FiCalendar className="text-amber-500" size={20} />,
+      },
+      {
+        title: "New Hires",
+        value: "3",
+        icon: <FiUserCheck className="text-emerald-500" size={20} />,
+      },
+      {
+        title: "Resignations",
+        value: "1",
+        icon: <FiClipboard className="text-red-500" size={20} />,
+      },
     ],
     manager: [
-      { title: "Team Members", value: "8", icon: <FiUsers className={primaryColor} size={20} /> },
-      { title: "Active Projects", value: "5", icon: <FiTrendingUp className="text-emerald-500" size={20} /> },
-      { title: "Tasks In Progress", value: "14", icon: <FiClipboard className="text-amber-500" size={20} /> },
-      { title: "Completed Tasks", value: "9", icon: <FiCheckCircle className="text-emerald-500" size={20} /> },
+      {
+        title: "Team Members",
+        value: "8",
+        icon: <FiUsers className={primaryColor} size={20} />,
+      },
+      {
+        title: "Active Projects",
+        value: "5",
+        icon: <FiTrendingUp className="text-emerald-500" size={20} />,
+      },
+      {
+        title: "Tasks In Progress",
+        value: "14",
+        icon: <FiClipboard className="text-amber-500" size={20} />,
+      },
+      {
+        title: "Completed Tasks",
+        value: "9",
+        icon: <FiCheckCircle className="text-emerald-500" size={20} />,
+      },
     ],
   };
 
@@ -482,7 +218,9 @@ export default function Dashboard() {
         {/* ===== HEADER (Refined) ===== */}
         <header className="flex justify-between items-center bg-white px-8 py-5 shadow-lg z-10">
           <div>
-            <h1 className={`text-3xl font-extrabold ${darkTextColor} capitalize`}>
+            <h1
+              className={`text-3xl font-extrabold ${darkTextColor} capitalize`}
+            >
               {role} Dashboard
             </h1>
             <p className="text-gray-500 text-sm mt-1">
@@ -497,19 +235,34 @@ export default function Dashboard() {
           </div>
 
           <div className="flex items-center gap-6">
+            {role === "employee" && (
+              <button
+                onClick={handleCheckInOut}
+                className={`${
+                  attendanceStatus === "checked-in"
+                    ? "bg-red-500 hover:bg-red-600"
+                    : "bg-sky-500 hover:bg-sky-600"
+                } text-white font-semibold px-4 py-2 rounded-lg shadow-md transition`}
+              >
+                {attendanceStatus === "checked-in" ? "Check Out" : "Check In"}
+              </button>
+            )}
+
             <button className="p-2 rounded-full hover:bg-gray-100 transition">
-                <FiSearch className="text-gray-500" size={20} />
+              <FiSearch className="text-gray-500" size={20} />
             </button>
+
             <button className="p-2 rounded-full hover:bg-gray-100 transition relative">
-                <FiBell className="text-gray-500" size={20} />
-                <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full border border-white"></span>
+              <FiBell className="text-gray-500" size={20} />
+              <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full border border-white"></span>
             </button>
+
             <img
               src={
                 user.avatar ||
                 `https://ui-avatars.com/api/?name=${encodeURIComponent(
                   user.name || "User"
-                )}&background=1e3a8a&color=ffffff` // Indigo-900 BG, White Text
+                )}&background=1e3a8a&color=ffffff`
               }
               alt="Profile"
               className="w-11 h-11 rounded-full border-2 border-sky-400 object-cover shadow-md cursor-pointer"
@@ -534,7 +287,9 @@ export default function Dashboard() {
                         {item.title}
                       </h3>
                       {/* Icon already styled in stats object */}
-                      <span className="text-gray-400 p-2 bg-sky-100 rounded-full">{item.icon}</span>
+                      <span className="text-gray-400 p-2 bg-sky-100 rounded-full">
+                        {item.icon}
+                      </span>
                     </div>
                     <p className={`text-3xl font-extrabold ${darkTextColor}`}>
                       {item.value}
@@ -553,11 +308,20 @@ export default function Dashboard() {
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                       <XAxis dataKey="stage" stroke="#6b7280" />
                       <YAxis stroke="#6b7280" />
-                      <Tooltip 
-                         contentStyle={{ backgroundColor: '#1e3a8a', border: 'none', borderRadius: '8px' }} 
-                         labelStyle={{ color: '#fff' }} 
-                       />
-                      <Bar dataKey="value" fill="#0ea5e9" radius={[4, 4, 0, 0]} /> {/* Sky-500 */}
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#1e3a8a",
+                          border: "none",
+                          borderRadius: "8px",
+                        }}
+                        labelStyle={{ color: "#fff" }}
+                      />
+                      <Bar
+                        dataKey="value"
+                        fill="#0ea5e9"
+                        radius={[4, 4, 0, 0]}
+                      />{" "}
+                      {/* Sky-500 */}
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -577,16 +341,25 @@ export default function Dashboard() {
                         paddingAngle={5}
                         cornerRadius={5}
                         labelLine={false}
-                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        label={({ name, percent }) =>
+                          `${name}: ${(percent * 100).toFixed(0)}%`
+                        }
                       >
-                         {tasksData.map((entry, index) => (
-                           <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
-                         ))}
+                        {tasksData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={pieColors[index % pieColors.length]}
+                          />
+                        ))}
                       </Pie>
-                      <Tooltip 
-                         contentStyle={{ backgroundColor: '#1e3a8a', border: 'none', borderRadius: '8px' }} 
-                         labelStyle={{ color: '#fff' }} 
-                       />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#1e3a8a",
+                          border: "none",
+                          borderRadius: "8px",
+                        }}
+                        labelStyle={{ color: "#fff" }}
+                      />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -607,7 +380,9 @@ export default function Dashboard() {
                       <h3 className="text-gray-600 text-sm font-semibold uppercase tracking-wider">
                         {item.title}
                       </h3>
-                      <span className="p-2 bg-indigo-100 rounded-full">{item.icon}</span>
+                      <span className="p-2 bg-indigo-100 rounded-full">
+                        {item.icon}
+                      </span>
                     </div>
                     <p className={`text-3xl font-extrabold ${darkTextColor}`}>
                       {item.value}
@@ -623,15 +398,23 @@ export default function Dashboard() {
                   </h3>
                   <div className="h-[280px] overflow-y-auto">
                     <p className="text-gray-500 text-sm">
-                      This section will list all pending leave requests (connect your API here). Placeholder content: Jane Doe (5 days), Mark Smith (2 days), Sarah Lee (3 days).
+                      This section will list all pending leave requests (connect
+                      your API here). Placeholder content: Jane Doe (5 days),
+                      Mark Smith (2 days), Sarah Lee (3 days).
                     </p>
                     {/* Add a simple list structure for visual representation */}
                     <ul className="mt-4 space-y-2">
-                        <li className="flex justify-between items-center p-3 bg-red-50 rounded-lg border border-red-200">
-                            <span className="font-medium text-red-700">Jane Doe</span>
-                            <span className="text-red-500 text-sm">5 days (Vacation)</span>
-                            <button className="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Review</button>
-                        </li>
+                      <li className="flex justify-between items-center p-3 bg-red-50 rounded-lg border border-red-200">
+                        <span className="font-medium text-red-700">
+                          Jane Doe
+                        </span>
+                        <span className="text-red-500 text-sm">
+                          5 days (Vacation)
+                        </span>
+                        <button className="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                          Review
+                        </button>
+                      </li>
                     </ul>
                   </div>
                 </div>
@@ -645,11 +428,20 @@ export default function Dashboard() {
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                       <XAxis dataKey="stage" stroke="#6b7280" />
                       <YAxis stroke="#6b7280" />
-                      <Tooltip 
-                         contentStyle={{ backgroundColor: '#1e3a8a', border: 'none', borderRadius: '8px' }} 
-                         labelStyle={{ color: '#fff' }} 
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#1e3a8a",
+                          border: "none",
+                          borderRadius: "8px",
+                        }}
+                        labelStyle={{ color: "#fff" }}
                       />
-                      <Bar dataKey="value" fill="#10b981" radius={[4, 4, 0, 0]} /> {/* Emerald-500 */}
+                      <Bar
+                        dataKey="value"
+                        fill="#10b981"
+                        radius={[4, 4, 0, 0]}
+                      />{" "}
+                      {/* Emerald-500 */}
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -670,7 +462,9 @@ export default function Dashboard() {
                       <h3 className="text-gray-600 text-sm font-semibold uppercase tracking-wider">
                         {item.title}
                       </h3>
-                      <span className="p-2 bg-amber-100 rounded-full">{item.icon}</span>
+                      <span className="p-2 bg-amber-100 rounded-full">
+                        {item.icon}
+                      </span>
                     </div>
                     <p className={`text-3xl font-extrabold ${darkTextColor}`}>
                       {item.value}
@@ -688,11 +482,16 @@ export default function Dashboard() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                     <XAxis dataKey="stage" stroke="#6b7280" />
                     <YAxis stroke="#6b7280" />
-                    <Tooltip 
-                         contentStyle={{ backgroundColor: '#1e3a8a', border: 'none', borderRadius: '8px' }} 
-                         labelStyle={{ color: '#fff' }} 
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "#1e3a8a",
+                        border: "none",
+                        borderRadius: "8px",
+                      }}
+                      labelStyle={{ color: "#fff" }}
                     />
-                    <Bar dataKey="value" fill="#f59e0b" radius={[4, 4, 0, 0]} /> {/* Amber-500 */}
+                    <Bar dataKey="value" fill="#f59e0b" radius={[4, 4, 0, 0]} />{" "}
+                    {/* Amber-500 */}
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -702,11 +501,14 @@ export default function Dashboard() {
           {/* ===== EMPLOYEE VIEW (Refined) ===== */}
           {role === "employee" && (
             <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
-              <div className="w-full max-w-3xl">
+              <div className="w-full ">
                 <div className="bg-white shadow-xl rounded-2xl p-8 border-t-8 border-sky-500 mb-8">
                   <div className="flex justify-between items-center mb-6">
-                    <h3 className={`text-2xl font-bold ${darkTextColor} flex items-center gap-2`}>
-                      <FiCalendar size={24} className={primaryColor} /> Leave Management
+                    <h3
+                      className={`text-2xl font-bold ${darkTextColor} flex items-center gap-2`}
+                    >
+                      <FiCalendar size={24} className={primaryColor} /> Leave
+                      Management
                     </h3>
                     <button
                       onClick={() => setShowLeaveForm(true)}
@@ -716,7 +518,8 @@ export default function Dashboard() {
                     </button>
                   </div>
                   <p className="text-sm text-gray-600">
-                    Your current leave balance: **10 Vacation, 5 Sick**. Track your requests below.
+                    Your current leave balance: **10 Vacation, 5 Sick**. Track
+                    your requests below.
                   </p>
                   {/* Placeholder for request tracking */}
                   <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 text-gray-600 text-sm">
@@ -725,8 +528,11 @@ export default function Dashboard() {
                 </div>
 
                 <div className="bg-white shadow-xl rounded-2xl p-8 border-t-8 border-indigo-500">
-                  <h3 className={`text-2xl font-bold mb-6 ${darkTextColor} flex items-center gap-2`}>
-                    <FiBell size={24} className="text-indigo-500" /> Company Announcements
+                  <h3
+                    className={`text-2xl font-bold mb-6 ${darkTextColor} flex items-center gap-2`}
+                  >
+                    <FiBell size={24} className="text-indigo-500" /> Company
+                    Announcements
                   </h3>
                   <ul className="space-y-4">
                     {announcements.length > 0 ? (
@@ -742,7 +548,8 @@ export default function Dashboard() {
                             {item.message}
                           </p>
                           <p className="text-xs text-gray-500 mt-2 italic">
-                            Published: {new Date(item.date).toLocaleDateString()}
+                            Published:{" "}
+                            {new Date(item.date).toLocaleDateString()}
                           </p>
                         </li>
                       ))
