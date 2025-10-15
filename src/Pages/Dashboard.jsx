@@ -23,8 +23,12 @@ import {
   Tooltip,
   CartesianGrid,
   ResponsiveContainer,
-  Cell, // Import Cell for custom Pie chart colors
+  Cell,
+  Line, // Import Cell for custom Pie chart colors
+  LineChart
 } from "recharts";
+import { FaTasks, FaProjectDiagram, FaStar } from "react-icons/fa";
+import { BsCalendarCheck } from "react-icons/bs";
 import EmployeeLeaveForm from "../component/EmployeeLeaveForm";
 
 export default function Dashboard() {
@@ -43,6 +47,14 @@ export default function Dashboard() {
       date: "2025-10-08",
     },
   ]);
+  const employeePerformanceData = [
+  { month: "Jan", score: 70 },
+  { month: "Feb", score: 75 },
+  { month: "Mar", score: 80 },
+  { month: "Apr", score: 85 },
+  { month: "May", score: 90 },
+  { month: "Jun", score: 88 },
+];
 
   const [checkedIn, setCheckedIn] = useState(false);
   const [attendanceStatus, setAttendanceStatus] = useState(null);
@@ -52,7 +64,7 @@ export default function Dashboard() {
     const employeeId = localStorage.getItem("userid");
 
     const res = await fetch(
-      `https://core-sphere-backend.vercel.app/Employee/getCheckInStatus/68ece7fad0fa337d518f5a0c`,
+      `http://localhost:5000/Employee/getCheckInStatus/68ece7fad0fa337d518f5a0c`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }
@@ -69,7 +81,7 @@ export default function Dashboard() {
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        `https://core-sphere-backend.vercel.app/Employee/updateCheckin/68ece7fad0fa337d518f5a0c`,
+        `http://localhost:5000/Employee/updateCheckin/68ece7fad0fa337d518f5a0c`,
         {
           method: "POST",
           headers: {
@@ -208,8 +220,24 @@ export default function Dashboard() {
         icon: <FiCheckCircle className="text-emerald-500" size={20} />,
       },
     ],
+ employee: [
+    { title: "Tasks Completed", value: 42, icon: <FaTasks className="text-blue-600 text-xl" /> },
+    { title: "Attendance", value: "95%", icon: <BsCalendarCheck className="text-green-600 text-xl" /> },
+    { title: "Projects", value: 3, icon: <FaProjectDiagram className="text-purple-600 text-xl" /> },
+    { title: "Performance Score", value: "88%", icon: <FaStar className="text-yellow-500 text-xl" /> },
+  ],
   };
+const recentTasks = [
+  { id: 1, title: "UI Design Update", project: "Website Revamp", status: "Completed", deadline: "Oct 12" },
+  { id: 2, title: "Client Report", project: "Q3 Insights", status: "In Progress", deadline: "Oct 18" },
+  { id: 3, title: "Bug Fixes", project: "CRM App", status: "Pending", deadline: "Oct 20" },
+];
 
+const upcomingMeetings = [
+  { id: 1, title: "Team Standup", date: "Oct 16", time: "10:00 AM", location: "Zoom" },
+  { id: 2, title: "Client Review", date: "Oct 18", time: "3:00 PM", location: "Meeting Room 2" },
+  { id: 3, title: "HR Check-in", date: "Oct 20", time: "11:30 AM", location: "Google Meet" },
+];
   return (
     <div className={`flex h-screen ${lightBg} overflow-hidden`}>
       <Sidebar />
@@ -499,70 +527,103 @@ export default function Dashboard() {
           )}
 
           {/* ===== EMPLOYEE VIEW (Refined) ===== */}
-          {role === "employee" && (
-            <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
-              <div className="w-full ">
-                <div className="bg-white shadow-xl rounded-2xl p-8 border-t-8 border-sky-500 mb-8">
-                  <div className="flex justify-between items-center mb-6">
-                    <h3
-                      className={`text-2xl font-bold ${darkTextColor} flex items-center gap-2`}
-                    >
-                      <FiCalendar size={24} className={primaryColor} /> Leave
-                      Management
-                    </h3>
-                    <button
-                      onClick={() => setShowLeaveForm(true)}
-                      className="bg-sky-600 hover:bg-sky-700 text-white px-6 py-3 rounded-xl text-md font-semibold transition duration-300 shadow-md hover:shadow-lg"
-                    >
-                      Request New Leave
-                    </button>
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    Your current leave balance: **10 Vacation, 5 Sick**. Track
-                    your requests below.
-                  </p>
-                  {/* Placeholder for request tracking */}
-                  <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 text-gray-600 text-sm">
-                    No recent pending requests.
-                  </div>
-                </div>
+       {role === "employee" && (
+  <div className="space-y-6">
+     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+      <h3 className={`text-xl font-bold mb-4 ${darkTextColor}`}>
+        Attendance Summary
+      </h3>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+        <div>
+          <p className="text-gray-500 font-semibold">Total Working Days</p>
+          <p className="text-3xl font-bold text-blue-600">22</p>
+        </div>
+        <div>
+          <p className="text-gray-500 font-semibold">Days Present</p>
+          <p className="text-3xl font-bold text-green-600">20</p>
+        </div>
+        <div>
+          <p className="text-gray-500 font-semibold">Leaves</p>
+          <p className="text-3xl font-bold text-red-600">2</p>
+        </div>
+      </div>
+    </div>
+    {/* 🔹 Employee Stats Cards */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {stats?.employee?.map((item) => (
+        <div
+          key={item.title}
+          className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition border-t-4 border-blue-500"
+        >
+          <div className="flex justify-between items-start mb-2">
+            <h3 className="text-gray-600 text-sm font-semibold uppercase tracking-wider">
+              {item.title}
+            </h3>
+            <span className="p-2 bg-blue-100 rounded-full">{item.icon}</span>
+          </div>
+          <p className={`text-3xl font-extrabold ${darkTextColor}`}>
+            {item.value}
+          </p>
+        </div>
+      ))}
+    </div>
 
-                <div className="bg-white shadow-xl rounded-2xl p-8 border-t-8 border-indigo-500">
-                  <h3
-                    className={`text-2xl font-bold mb-6 ${darkTextColor} flex items-center gap-2`}
-                  >
-                    <FiBell size={24} className="text-indigo-500" /> Company
-                    Announcements
-                  </h3>
-                  <ul className="space-y-4">
-                    {announcements.length > 0 ? (
-                      announcements.map((item, index) => (
-                        <li
-                          key={index}
-                          className="border-b border-gray-100 pb-4 last:border-none last:pb-0"
-                        >
-                          <p className="font-semibold text-lg text-indigo-700">
-                            {item.title}
-                          </p>
-                          <p className="text-md text-gray-700 mt-1">
-                            {item.message}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-2 italic">
-                            Published:{" "}
-                            {new Date(item.date).toLocaleDateString()}
-                          </p>
-                        </li>
-                      ))
-                    ) : (
-                      <p className="text-gray-500 text-sm">
-                        No new announcements available.
-                      </p>
-                    )}
-                  </ul>
-                </div>
-              </div>
+    {/* 🔹 Performance Progress Chart */}
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+      <h3 className={`text-xl font-bold mb-4 ${darkTextColor}`}>
+        Your Performance Progress
+      </h3>
+      <ResponsiveContainer width="100%" height={350}>
+        <LineChart data={employeePerformanceData}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+          <XAxis dataKey="month" stroke="#6b7280" />
+          <YAxis stroke="#6b7280" />
+          <Tooltip
+            contentStyle={{
+              backgroundColor: "#1e3a8a",
+              border: "none",
+              borderRadius: "8px",
+            }}
+            labelStyle={{ color: "#fff" }}
+          />
+          <Line
+            type="monotone"
+            dataKey="score"
+            stroke="#3b82f6"
+            strokeWidth={3}
+            dot={{ r: 5, fill: "#3b82f6" }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+
+    
+
+    {/* 🔹 Attendance Summary */}
+   
+
+    {/* 🔹 Upcoming Meetings */}
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+      <h3 className={`text-xl font-bold mb-4 ${darkTextColor}`}>
+        Upcoming Meetings
+      </h3>
+      <ul className="divide-y">
+        {upcomingMeetings.map((meeting) => (
+          <li key={meeting.id} className="py-3 flex justify-between items-center">
+            <div>
+              <p className="font-semibold text-gray-700">{meeting.title}</p>
+              <p className="text-gray-500 text-sm">
+                {meeting.date} • {meeting.time}
+              </p>
             </div>
-          )}
+            <span className="text-blue-500 font-semibold">{meeting.location}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+)}
+
         </main>
       </div>
 

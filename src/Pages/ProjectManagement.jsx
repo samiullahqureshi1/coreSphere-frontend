@@ -38,9 +38,7 @@ export default function ProjectManagement() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const res = await fetch(
-          "https://core-sphere-backend.vercel.app/Project/getProjects"
-        );
+        const res = await fetch("http://localhost:5000/Project/getProjects");
         const data = await res.json();
         if (data.success) {
           setProjects(data.projects);
@@ -65,14 +63,11 @@ export default function ProjectManagement() {
 
     setLoading(true);
     try {
-      const res = await fetch(
-        "https://core-sphere-backend.vercel.app/Project/addProject",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        }
-      );
+      const res = await fetch("http://localhost:5000/Project/addProject", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
       const data = await res.json();
 
@@ -104,7 +99,7 @@ export default function ProjectManagement() {
       return;
     try {
       const res = await fetch(
-        `https://core-sphere-backend.vercel.app/Project/deleteProject/${id}`,
+        `http://localhost:5000/Project/deleteProject/${id}`,
         {
           method: "DELETE",
         }
@@ -125,9 +120,7 @@ export default function ProjectManagement() {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const res = await fetch(
-          "https://core-sphere-backend.vercel.app/Employee/getEmployee"
-        );
+        const res = await fetch("http://localhost:5000/Employee/getEmployee");
         const data = await res.json();
         if (data.success) {
           setEmployees(data.employees);
@@ -193,13 +186,10 @@ export default function ProjectManagement() {
       }
 
       // Send request
-      const res = await fetch(
-        "https://core-sphere-backend.vercel.app/Employee/addEmployee",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const res = await fetch("http://localhost:5000/Employee/addEmployee", {
+        method: "POST",
+        body: formData,
+      });
 
       const data = await res.json();
 
@@ -271,14 +261,19 @@ export default function ProjectManagement() {
     if (!newTask.title.trim()) return alert("Please enter a task title.");
 
     try {
-      const res = await fetch(
-        "https://core-sphere-backend.vercel.app/api/task/add",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newTask),
-        }
-      );
+      const res = await fetch("http://localhost:5000/api/task/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: newTask.title,
+          description: newTask.description,
+          priority: newTask.priority,
+          status: newTask.status, // default same as backend
+          assignees: newTask.assignees,
+          projectId: newTask.project, // 👈 important change here
+        }),
+      });
+
       const data = await res.json();
 
       if (data.success) {
@@ -286,12 +281,14 @@ export default function ProjectManagement() {
           ...prev,
           backlog: [...prev.backlog, data.task],
         }));
+
         setShowModal(false);
         setNewTask({
           title: "",
           description: "",
           assignees: [],
           priority: "Medium",
+          project: "", // reset selected project too
         });
       } else {
         alert(data.message);
@@ -301,6 +298,7 @@ export default function ProjectManagement() {
       alert("Something went wrong creating the task.");
     }
   };
+
   return (
     <div className={`flex h-screen ${lightBg} relative overflow-hidden`}>
       <Sidebar />
@@ -396,7 +394,6 @@ export default function ProjectManagement() {
                           key={i}
                           className="border-b hover:bg-sky-50 transition duration-200"
                         >
-                          {/* Project Name */}
                           <td className="p-3 font-semibold text-gray-800">
                             <div>
                               <p className="truncate">{p.name}</p>
@@ -408,12 +405,10 @@ export default function ProjectManagement() {
                             </div>
                           </td>
 
-                          {/* Client */}
                           <td className="p-3 text-gray-700">
                             {p.client || "—"}
                           </td>
 
-                          {/* Status */}
                           <td className="p-3 text-center">
                             <span
                               className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm ${
@@ -428,31 +423,26 @@ export default function ProjectManagement() {
                             </span>
                           </td>
 
-                          {/* Start Date */}
                           <td className="p-3 text-center text-gray-600">
                             {p.startDate
                               ? new Date(p.startDate).toLocaleDateString()
                               : "—"}
                           </td>
 
-                          {/* Deadline */}
                           <td className="p-3 text-center text-gray-600">
                             {p.deadline
                               ? new Date(p.deadline).toLocaleDateString()
                               : "—"}
                           </td>
 
-                          {/* Working Hours */}
                           <td className="p-3 text-center text-gray-700 font-medium">
                             {p.workingHours ? `${p.workingHours} hrs` : "—"}
                           </td>
 
-                          {/* Budget */}
                           <td className="p-3 text-right font-semibold text-indigo-900">
                             ${p.budget?.toLocaleString() || 0}
                           </td>
 
-                          {/* Team Members */}
                           <td className="p-3 text-center">
                             <div className="flex justify-center -space-x-2">
                               {(p.teamMembers || [])
@@ -479,7 +469,6 @@ export default function ProjectManagement() {
                             </div>
                           </td>
 
-                          {/* Actions */}
                           <td className="p-3 text-center">
                             <button
                               onClick={() => handleDeleteProject(p._id)}
@@ -767,6 +756,59 @@ export default function ProjectManagement() {
 
             {/* Form */}
             <div className="space-y-5">
+              {/* Project Selection */}
+              {/* Project Selection */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Project <span className="text-red-500">*</span>
+                </label>
+
+                {/* Selected Project Badge */}
+                {newTask.project && (
+                  <div className="flex items-center gap-2 mb-2">
+                    {(() => {
+                      const proj = projects.find(
+                        (p) => p._id === newTask.project
+                      );
+                      if (!proj) return null;
+                      return (
+                        <div className="flex items-center gap-1 bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-xs font-medium shadow-sm">
+                          <span>{proj.name}</span>
+                          <FiX
+                            size={12}
+                            className="cursor-pointer hover:text-red-500"
+                            onClick={() =>
+                              setNewTask({ ...newTask, project: "" })
+                            }
+                          />
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+
+                {/* Dropdown (only show if no project selected) */}
+                {!newTask.project && (
+                  <select
+                    onChange={(e) => {
+                      const projId = e.target.value;
+                      if (projId) {
+                        setNewTask({ ...newTask, project: projId });
+                      }
+                      e.target.value = "";
+                    }}
+                    className="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none bg-white"
+                  >
+                    <option value="">Select Project...</option>
+                    {projects.map((proj) => (
+                      <option key={proj._id} value={proj._id}>
+                        {proj.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
               {/* Title */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
@@ -781,6 +823,24 @@ export default function ProjectManagement() {
                     setNewTask({ ...newTask, title: e.target.value })
                   }
                 />
+              </div>
+              {/* Status */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  className="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none"
+                  value={newTask.status || "backlog"}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, status: e.target.value })
+                  }
+                >
+                  <option value="backlog">Backlog</option>
+                  <option value="todo">To Do</option>
+                  <option value="inprogress">In Progress</option>
+                  <option value="done">Done</option>
+                </select>
               </div>
 
               {/* Description */}

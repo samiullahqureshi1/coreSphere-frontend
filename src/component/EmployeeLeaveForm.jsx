@@ -15,7 +15,7 @@ export default function EmployeeLeaveForm() {
     const userId = localStorage.getItem("userid");
     setLoading(true);
     try {
-      const res = await fetch("https://core-sphere-backend.vercel.app/Leave/addLeave", {
+      const res = await fetch("http://localhost:5000/Leave/addLeave", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
