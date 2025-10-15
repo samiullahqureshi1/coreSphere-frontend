@@ -33,7 +33,7 @@ const Signup = () => {
     try {
       setLoading(true);
 
-      const response = await fetch("https://core-sphere-backend.vercel.app/auth/signUp", {
+      const response = await fetch("http://localhost:5000/auth/signUp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

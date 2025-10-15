@@ -39,7 +39,7 @@ export default function ProjectManagement() {
     const fetchProjects = async () => {
       try {
         const res = await fetch(
-          "https://core-sphere-backend.vercel.app/Project/getProjects"
+          "http://localhost:5000/Project/getProjects"
         );
         const data = await res.json();
         if (data.success) {
@@ -66,7 +66,7 @@ export default function ProjectManagement() {
     setLoading(true);
     try {
       const res = await fetch(
-        "https://core-sphere-backend.vercel.app/Project/addProject",
+        "http://localhost:5000/Project/addProject",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -104,7 +104,7 @@ export default function ProjectManagement() {
       return;
     try {
       const res = await fetch(
-        `https://core-sphere-backend.vercel.app/Project/deleteProject/${id}`,
+        `http://localhost:5000/Project/deleteProject/${id}`,
         {
           method: "DELETE",
         }
@@ -126,7 +126,7 @@ export default function ProjectManagement() {
     const fetchEmployees = async () => {
       try {
         const res = await fetch(
-          "https://core-sphere-backend.vercel.app/Employee/getEmployee"
+          "http://localhost:5000/Employee/getEmployee"
         );
         const data = await res.json();
         if (data.success) {
@@ -194,7 +194,7 @@ export default function ProjectManagement() {
 
       // Send request
       const res = await fetch(
-        "https://core-sphere-backend.vercel.app/Employee/addEmployee",
+        "http://localhost:5000/Employee/addEmployee",
         {
           method: "POST",
           body: formData,
@@ -272,7 +272,7 @@ export default function ProjectManagement() {
 
     try {
       const res = await fetch(
-        "https://core-sphere-backend.vercel.app/api/task/add",
+        "http://localhost:5000/api/task/add",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
