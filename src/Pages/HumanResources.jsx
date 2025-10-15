@@ -1177,7 +1177,6 @@ export default function HumanResources() {
           isViewOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        {/* Header */}
         <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100 sticky top-0 bg-indigo-50 z-10">
           <h2 className="text-xl font-bold text-indigo-900">
             Employee Profile
