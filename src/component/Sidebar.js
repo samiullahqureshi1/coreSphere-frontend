@@ -72,7 +72,7 @@
 // //     const userId = localStorage.getItem("userid");
 // //     try {
 // //       await fetch(
-// //         `http://localhost:5000/auth/logout/${userId}`,
+// //         `https://core-sphere-backend.vercel.app/auth/logout/${userId}`,
 // //         { method: "POST" }
 // //       );
 // //       localStorage.clear();
@@ -218,7 +218,7 @@
 //   const handleLogout = async () => {
 //     const userId = localStorage.getItem("userid");
 //     try {
-//       await fetch(`http://localhost:5000/auth/logout/${userId}`, { method: "POST" });
+//       await fetch(`https://core-sphere-backend.vercel.app/auth/logout/${userId}`, { method: "POST" });
 //       localStorage.clear();
 //       navigate("/login", { replace: true });
 //     } catch (error) {
@@ -395,7 +395,7 @@ export default function Sidebar() {
   const handleLogout = async () => {
     const userId = localStorage.getItem("userid");
     try {
-      await fetch(`http://localhost:5000/auth/logout/${userId}`, { method: "POST" });
+      await fetch(`https://core-sphere-backend.vercel.app/auth/logout/${userId}`, { method: "POST" });
       localStorage.clear();
       navigate("/login", { replace: true });
     } catch (error) {
