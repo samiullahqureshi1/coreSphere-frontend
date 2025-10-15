@@ -33,7 +33,7 @@
 // //   useEffect(() => {
 // //     const fetchEmployees = async () => {
 // //       try {
-// //         const res = await fetch("http://localhost:5000/Employee/getEmployee");
+// //         const res = await fetch("https://core-sphere-backend.vercel.app/Employee/getEmployee");
 // //         const data = await res.json();
 // //         if (data.success) setEmployees(data.employees);
 // //       } catch (err) {
@@ -43,7 +43,7 @@
 
 // //     const fetchTasks = async () => {
 // //       try {
-// //         const res = await fetch("http://localhost:5000/api/task/get");
+// //         const res = await fetch("https://core-sphere-backend.vercel.app/api/task/get");
 // //         const data = await res.json();
 // //         if (data.success) {
 // //           const grouped = { backlog: [], todo: [], inprogress: [], done: [] };
@@ -85,7 +85,7 @@
 // //     // Optional: Update status in DB
 // //     try {
 // //       await fetch(
-// //         `http://localhost:5000/api/task/updateStatus/${movedTask._id}`,
+// //         `https://core-sphere-backend.vercel.app/api/task/updateStatus/${movedTask._id}`,
 // //         {
 // //           method: "PUT",
 // //           headers: { "Content-Type": "application/json" },
@@ -104,7 +104,7 @@
 // //     }
 
 // //     try {
-// //       const res = await fetch("http://localhost:5000/api/task/add", {
+// //       const res = await fetch("https://core-sphere-backend.vercel.app/api/task/add", {
 // //         method: "POST",
 // //         headers: { "Content-Type": "application/json" },
 // //         body: JSON.stringify(newTask),
@@ -566,7 +566,7 @@
 // //                     checked={st.completed}
 // //                     onChange={async (e) => {
 // //                       const res = await fetch(
-// //                         `http://localhost:5000/api/task/update/${selectedTask._id}`,
+// //                         `https://core-sphere-backend.vercel.app/api/task/update/${selectedTask._id}`,
 // //                         {
 // //                           method: "PUT",
 // //                           headers: { "Content-Type": "application/json" },
@@ -618,7 +618,7 @@
 // //               onClick={async () => {
 // //                 if (!newSubtask.trim()) return;
 // //                 const res = await fetch(
-// //                   `http://localhost:5000/api/task/subtask/${selectedTask._id}`,
+// //                   `https://core-sphere-backend.vercel.app/api/task/subtask/${selectedTask._id}`,
 // //                   {
 // //                     method: "POST",
 // //                     headers: { "Content-Type": "application/json" },
@@ -645,7 +645,7 @@
 // //         <button
 // //           onClick={async () => {
 // //             const res = await fetch(
-// //               `http://localhost:5000/api/task/update/${selectedTask._id}`,
+// //               `https://core-sphere-backend.vercel.app/api/task/update/${selectedTask._id}`,
 // //               {
 // //                 method: "PUT",
 // //                 headers: { "Content-Type": "application/json" },
@@ -712,7 +712,7 @@
 //     const fetchEmployees = async () => {
 //       try {
 //         const res = await fetch(
-//           "http://localhost:5000/Employee/getEmployee"
+//           "https://core-sphere-backend.vercel.app/Employee/getEmployee"
 //         );
 //         const data = await res.json();
 //         if (data.success) setEmployees(data.employees);
@@ -724,7 +724,7 @@
 //     const fetchTasks = async () => {
 //       try {
 //         const res = await fetch(
-//           "http://localhost:5000/api/task/get"
+//           "https://core-sphere-backend.vercel.app/api/task/get"
 //         );
 //         const data = await res.json();
 //         if (data.success) {
@@ -772,7 +772,7 @@
 //     // Optional: Update status in DB
 //     try {
 //       await fetch(
-//         `http://localhost:5000/api/task/updateStatus/${movedTask._id}`,
+//         `https://core-sphere-backend.vercel.app/api/task/updateStatus/${movedTask._id}`,
 //         {
 //           method: "PUT",
 //           headers: { "Content-Type": "application/json" },
@@ -801,7 +801,7 @@
 //     });
 
 //     try {
-//       const res = await fetch("http://localhost:5000/api/task/add", {
+//       const res = await fetch("https://core-sphere-backend.vercel.app/api/task/add", {
 //         method: "POST",
 //         headers: { "Content-Type": "application/json" },
 //         body: JSON.stringify({ ...newTask, assignees: assigneesWithDetails }),
@@ -1271,7 +1271,7 @@
 //                             : s
 //                         );
 //                         const res = await fetch(
-//                           `http://localhost:5000/api/task/update/${selectedTask._id}`,
+//                           `https://core-sphere-backend.vercel.app/api/task/update/${selectedTask._id}`,
 //                           {
 //                             method: "PUT",
 //                             headers: { "Content-Type": "application/json" },
@@ -1348,7 +1348,7 @@
 //               onClick={async () => {
 //                 if (!newSubtask.trim()) return;
 //                 const res = await fetch(
-//                   `http://localhost:5000/api/task/subtask/${selectedTask._id}`,
+//                   `https://core-sphere-backend.vercel.app/api/task/subtask/${selectedTask._id}`,
 //                   {
 //                     method: "POST",
 //                     headers: { "Content-Type": "application/json" },
@@ -1377,7 +1377,7 @@
 //         <button
 //           onClick={async () => {
 //             const res = await fetch(
-//               `http://localhost:5000/api/task/update/${selectedTask._id}`,
+//               `https://core-sphere-backend.vercel.app/api/task/update/${selectedTask._id}`,
 //               {
 //                 method: "PUT",
 //                 headers: { "Content-Type": "application/json" },
@@ -1458,7 +1458,7 @@ export default function TaskBoard() {
     const fetchEmployees = async () => {
       try {
         const res = await fetch(
-          "http://localhost:5000/Employee/getEmployee"
+          "https://core-sphere-backend.vercel.app/Employee/getEmployee"
         );
         const data = await res.json();
         if (data.success) setEmployees(data.employees);
@@ -1470,7 +1470,7 @@ export default function TaskBoard() {
     const fetchTasks = async () => {
       try {
         const res = await fetch(
-          "http://localhost:5000/api/task/get"
+          "https://core-sphere-backend.vercel.app/api/task/get"
         );
         const data = await res.json();
         if (data.success) {
@@ -1525,7 +1525,7 @@ const handleDragEnd = async (result) => {
   // === Update DB status ===
   try {
     const res = await fetch(
-      `http://localhost:5000/api/task/updateTaskStatus/${movedTask._id}`,
+      `https://core-sphere-backend.vercel.app/api/task/updateTaskStatus/${movedTask._id}`,
       {
         method: "PATCH", // ✅ use PATCH instead of PUT for partial update
         headers: { "Content-Type": "application/json" },
@@ -1549,7 +1549,7 @@ const handleDragEnd = async (result) => {
 
     try {
       const res = await fetch(
-        "http://localhost:5000/api/task/add",
+        "https://core-sphere-backend.vercel.app/api/task/add",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1585,7 +1585,7 @@ const handleDragEnd = async (result) => {
 
   try {
     const res = await fetch(
-      `http://localhost:5000/api/task/deleteTask/${taskId}`,
+      `https://core-sphere-backend.vercel.app/api/task/deleteTask/${taskId}`,
       {
         method: "DELETE",
       }
@@ -1936,7 +1936,7 @@ const handleDragEnd = async (result) => {
                                     : s
                               );
                               const res = await fetch(
-                                `http://localhost:5000/api/task/update/${selectedTask._id}`,
+                                `https://core-sphere-backend.vercel.app/api/task/update/${selectedTask._id}`,
                                 {
                                   method: "PUT",
                                   headers: {
@@ -2031,7 +2031,7 @@ const handleDragEnd = async (result) => {
                     onClick={async () => {
                       if (!newSubtask.trim()) return;
                       const res = await fetch(
-                        `http://localhost:5000/api/task/subtask/${selectedTask._id}`,
+                        `https://core-sphere-backend.vercel.app/api/task/subtask/${selectedTask._id}`,
                         {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
@@ -2063,7 +2063,7 @@ const handleDragEnd = async (result) => {
               <button
                 onClick={async () => {
                   const res = await fetch(
-                    `http://localhost:5000/api/task/update/${selectedTask._id}`,
+                    `https://core-sphere-backend.vercel.app/api/task/update/${selectedTask._id}`,
                     {
                       method: "PUT",
                       headers: { "Content-Type": "application/json" },

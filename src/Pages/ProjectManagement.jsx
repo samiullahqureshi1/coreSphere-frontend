@@ -38,7 +38,7 @@ export default function ProjectManagement() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const res = await fetch("http://localhost:5000/Project/getProjects");
+        const res = await fetch("https://core-sphere-backend.vercel.app/Project/getProjects");
         const data = await res.json();
         if (data.success) {
           setProjects(data.projects);
@@ -63,7 +63,7 @@ export default function ProjectManagement() {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/Project/addProject", {
+      const res = await fetch("https://core-sphere-backend.vercel.app/Project/addProject", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -99,7 +99,7 @@ export default function ProjectManagement() {
       return;
     try {
       const res = await fetch(
-        `http://localhost:5000/Project/deleteProject/${id}`,
+        `https://core-sphere-backend.vercel.app/Project/deleteProject/${id}`,
         {
           method: "DELETE",
         }
@@ -120,7 +120,7 @@ export default function ProjectManagement() {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const res = await fetch("http://localhost:5000/Employee/getEmployee");
+        const res = await fetch("https://core-sphere-backend.vercel.app/Employee/getEmployee");
         const data = await res.json();
         if (data.success) {
           setEmployees(data.employees);
@@ -186,7 +186,7 @@ export default function ProjectManagement() {
       }
 
       // Send request
-      const res = await fetch("http://localhost:5000/Employee/addEmployee", {
+      const res = await fetch("https://core-sphere-backend.vercel.app/Employee/addEmployee", {
         method: "POST",
         body: formData,
       });
@@ -261,7 +261,7 @@ export default function ProjectManagement() {
     if (!newTask.title.trim()) return alert("Please enter a task title.");
 
     try {
-      const res = await fetch("http://localhost:5000/api/task/add", {
+      const res = await fetch("https://core-sphere-backend.vercel.app/api/task/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
