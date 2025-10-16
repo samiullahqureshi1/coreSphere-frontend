@@ -280,10 +280,7 @@ export default function Sidebar() {
     }
   }, []);
 
-  // === ROLE-BASED MENU ITEMS ===
-    // === ROLE-BASED MENU ITEMS ===
   const allMenuItems = [
-    // 🔹 Common Modules
     {
       name: "Dashboard",
       icon: <LayoutDashboard size={18} />,
@@ -291,15 +288,13 @@ export default function Sidebar() {
       access: ["admin", "hr", "manager", "employee"],
     },
 
-    // 🔹 Admin / Manager Projects
     {
       name: "Projects",
       icon: <FolderKanban size={18} />,
       path: "/projects",
-      access: ["admin", "manager"],
+      access: ["admin"],
     },
 
-    // 🔹 HR Module
     {
       name: "HR",
       icon: <Users size={18} />,
@@ -307,7 +302,6 @@ export default function Sidebar() {
       access: ["admin", "hr"],
     },
 
-    // 🔹 CRM
     {
       name: "CRM",
       icon: <Briefcase size={18} />,
@@ -315,22 +309,25 @@ export default function Sidebar() {
       access: ["admin"],
     },
 
-    // 🔹 Performance Analytics
-    {
-      name: "Performance",
-      icon: <BarChart2 size={18} />,
-      path: "/performance",
-      access: ["admin", "manager", "hr"],
-    },
+    // {
+    //   name: "Performance",
+    //   icon: <BarChart2 size={18} />,
+    //   path: "/performance",
+    //   access: ["admin", "manager", "hr"],
+    // },
 
-    // ======================
-    // 🔸 MANAGER MODULES
-    // ======================
+   
 
     {
       name: "Team Overview",
       icon: <Users size={18} />,
       path: "/manager/team-overview",
+      access: ["manager"],
+    },
+     {
+      name: "Project Overview",
+      icon: <Users size={18} />,
+      path: "/manager/project-overview",
       access: ["manager"],
     },
     {
@@ -364,9 +361,7 @@ export default function Sidebar() {
       access: ["manager"],
     },
 
-    // ======================
-    // 🔸 EMPLOYEE MODULES
-    // ======================
+    
 
     {
       name: "My Tasks",

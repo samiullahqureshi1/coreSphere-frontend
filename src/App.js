@@ -18,6 +18,10 @@ import AnnouncementPage from "./Pages/AnnouncementPage";
 import EmployeeAttendance from "./Pages/EmployeeAttendance";
 import EmployeePayroll from "./Pages/EmployeePayroll";
 import EmployeeLeaveManagement from "./Pages/EmployeeLeaveManagement";
+import TeamOverviewPage from "./Pages/TeamOverviewPage";
+import ManagerProjectsPage from "./Pages/ManagerProjectsPage";
+import ManagerApprovals from "./Pages/ManagerApprovals";
+import SetPassword from "./Pages/SetPassword";
 
 const App = () => {
   return (
@@ -35,6 +39,11 @@ const App = () => {
         <Route path="/employee/attendance" element={<EmployeeAttendance />} />
         <Route path="/employee/payroll" element={<EmployeePayroll />} />
         <Route path="/employee/leave-management" element={<EmployeeLeaveManagement />} />
+        <Route path="/manager/team-overview" element={<TeamOverviewPage />} />
+        <Route path="/manager/tasks" element={<TaskBoard />} />
+        <Route path="/manager/project-overview" element={<ManagerProjectsPage />} />
+        <Route path="/manager/approvals" element={<ManagerApprovals />} />
+  <Route path="/set-password" element={<SetPassword />} />
 
         <Route path="/home" element={<Navigate to="/dashboard" />} />
         <Route path="/signup" element={<Signup />} />

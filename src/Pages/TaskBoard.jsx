@@ -16,6 +16,8 @@ export default function TaskBoard() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [showDrawer, setShowDrawer] = useState(false);
   const [newSubtask, setNewSubtask] = useState("");
+  const [projects, setProjects] = useState([]);
+
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
@@ -177,7 +179,23 @@ export default function TaskBoard() {
       alert("Something went wrong deleting the task.");
     }
   };
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const res = await fetch("https://core-sphere-backend.vercel.app/Project/getProjects");
+        const data = await res.json();
+        if (data.success) {
+          setProjects(data.projects);
+        } else {
+          console.error("Failed to load projects:", data.message);
+        }
+      } catch (err) {
+        console.error("Error fetching projects:", err);
+      }
+    };
 
+    fetchProjects();
+  }, []);
   return (
     <div className={`flex flex-col ${lightBg}`}>
       {role === "admin" ? (
@@ -724,7 +742,6 @@ export default function TaskBoard() {
                     />
                   </div>
 
-                  {/* Description */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">
                       Description
@@ -740,13 +757,11 @@ export default function TaskBoard() {
                     />
                   </div>
 
-                  {/* Assignees */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">
                       Assign Employees
                     </label>
 
-                    {/* Selected badges */}
                     <div className="flex flex-wrap gap-2 mb-2">
                       {newTask.assignees.map((empId) => {
                         const emp = employees.find((e) => e._id === empId);
@@ -781,7 +796,6 @@ export default function TaskBoard() {
                       })}
                     </div>
 
-                    {/* Dropdown */}
                     <select
                       onChange={(e) => {
                         const empId = e.target.value;
@@ -822,7 +836,6 @@ export default function TaskBoard() {
                     </select>
                   </div>
 
-                  {/* Submit */}
                   <button
                     onClick={handleCreateTask}
                     className={`w-full bg-${primaryBlue} hover:bg-${primaryBlueHover} text-white py-3 rounded-xl font-semibold shadow-md transition`}
@@ -833,6 +846,10 @@ export default function TaskBoard() {
               </div>
             </div>
           )}
+        </>
+      ) : role === "manager" ? (
+        <>
+          <ManagerTaskBoard />
         </>
       ) : role === "employee" ? (
         <>
@@ -888,7 +905,7 @@ function EmployeeTaskBoard() {
 
   const token = localStorage.getItem("token");
   const decoded = token ? jwtDecode(token) : null;
-  const userId =  "68ece7fad0fa337d518f5a0c"; 
+  const userId = decoded._id;
 
   useEffect(() => {
     const fetchEmployeeTasks = async () => {
@@ -1036,7 +1053,6 @@ function EmployeeTaskBoard() {
   );
 }
 
-
 function TaskCard({ task, idx, userId }) {
   const [elapsed, setElapsed] = useState(0);
   const myEntry = task.timeTracking?.find(
@@ -1141,5 +1157,521 @@ function TaskCard({ task, idx, userId }) {
         </div>
       )}
     </Draggable>
+  );
+}
+function ManagerTaskBoard() {
+  const [tasks, setTasks] = useState({
+    backlog: [],
+    todo: [],
+    inprogress: [],
+    done: [],
+  });
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [projects, setProjects] = useState([]);
+
+  const [newTask, setNewTask] = useState({
+    title: "",
+    description: "",
+    assignees: [],
+    priority: "Medium",
+  });
+
+  const primaryBlue = "sky-600";
+  const primaryBlueHover = "sky-700";
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const res = await fetch("https://core-sphere-backend.vercel.app/Project/getProjects");
+        const data = await res.json();
+        if (data.success) {
+          setProjects(data.projects);
+        } else {
+          console.error("Failed to load projects:", data.message);
+        }
+      } catch (err) {
+        console.error("Error fetching projects:", err);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const res = await fetch("https://core-sphere-backend.vercel.app/Employee/getEmployee");
+        const data = await res.json();
+        if (data.success) setEmployees(data.employees);
+      } catch (err) {
+        console.error("Error fetching employees:", err);
+      }
+    };
+
+    const fetchTasks = async () => {
+      try {
+        const res = await fetch("https://core-sphere-backend.vercel.app/api/task/get");
+        const data = await res.json();
+        if (data.success) {
+          const grouped = { backlog: [], todo: [], inprogress: [], done: [] };
+          data.tasks.forEach((task) => grouped[task.status].push(task));
+          setTasks(grouped);
+        }
+      } catch (err) {
+        console.error("Error fetching manager tasks:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEmployees();
+    fetchTasks();
+  }, []);
+
+  const handleCreateTask = async () => {
+    if (!newTask.title.trim()) return alert("Please enter a task title.");
+
+    try {
+      const res = await fetch("https://core-sphere-backend.vercel.app/api/task/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: newTask.title,
+          description: newTask.description,
+          priority: newTask.priority,
+          status: newTask.status,
+          assignees: newTask.assignees,
+          projectId: newTask.project,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setTasks((prev) => ({
+          ...prev,
+          backlog: [...prev.backlog, data.task],
+        }));
+
+        setShowModal(false);
+        setNewTask({
+          title: "",
+          description: "",
+          assignees: [],
+          priority: "Medium",
+          project: "",
+        });
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error("Error creating task:", error);
+      alert("Something went wrong creating the task.");
+    }
+  };
+
+  const handleDeleteTask = async (taskId, columnKey) => {
+    if (!window.confirm("Are you sure you want to delete this task?")) return;
+
+    try {
+      const res = await fetch(
+        `https://core-sphere-backend.vercel.app/api/task/deleteTask/${taskId}`,
+        {
+          method: "DELETE",
+        }
+      );
+      const data = await res.json();
+
+      if (data.message === "Task deleted successfully") {
+        setTasks((prev) => ({
+          ...prev,
+          [columnKey]: prev[columnKey].filter((task) => task._id !== taskId),
+        }));
+      } else {
+        alert(data.message || "Failed to delete task.");
+      }
+    } catch (err) {
+      console.error("Error deleting task:", err);
+    }
+  };
+
+  const handleDragEnd = async (result) => {
+    const { source, destination } = result;
+    if (!destination) return;
+    if (
+      source.droppableId === destination.droppableId &&
+      source.index === destination.index
+    )
+      return;
+
+    const sourceCol = source.droppableId;
+    const destCol = destination.droppableId;
+
+    const movedTask = tasks[sourceCol][source.index];
+    const updatedSource = Array.from(tasks[sourceCol]);
+    updatedSource.splice(source.index, 1);
+
+    const updatedDest = Array.from(tasks[destCol]);
+    updatedDest.splice(destination.index, 0, { ...movedTask, status: destCol });
+
+    const updatedTasks = {
+      ...tasks,
+      [sourceCol]: updatedSource,
+      [destCol]: updatedDest,
+    };
+    setTasks(updatedTasks);
+
+    try {
+      await fetch(
+        `https://core-sphere-backend.vercel.app/api/task/updateTaskStatus/${movedTask._id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: destCol }),
+        }
+      );
+    } catch (err) {
+      console.error("Error updating status:", err);
+    }
+  };
+
+  return (
+    <div className="flex min-h-screen bg-gray-50">
+      <Sidebar />
+
+      <div className="flex-1 flex flex-col">
+        <header className="flex items-center justify-between bg-white shadow-sm px-6 py-4 border-b border-gray-200">
+          <div>
+            <h1 className="text-2xl font-bold text-indigo-900">
+              Manager Taskboard
+            </h1>
+            <p className="text-sm text-gray-500">
+              View, add, and manage all company tasks
+            </p>
+          </div>
+          <button
+            onClick={() => setShowModal(true)}
+            className={`flex items-center gap-2 bg-${primaryBlue} text-white px-4 py-2 rounded-lg hover:bg-${primaryBlueHover} transition font-semibold`}
+          >
+            <FiPlus /> Add Task
+          </button>
+        </header>
+
+        <main className="flex-1 p-6 overflow-y-auto">
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <div className="flex gap-6 min-w-[1200px] pb-4">
+              {["backlog", "todo", "inprogress", "done"].map((statusKey) => (
+                <Droppable key={statusKey} droppableId={statusKey}>
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className={`w-80 flex-shrink-0 p-3 rounded-xl transition ${
+                        snapshot.isDraggingOver ? "bg-sky-50" : "bg-gray-50"
+                      }`}
+                    >
+                      <div className="flex justify-between items-center mb-3 p-2 border-b border-sky-200">
+                        <h3 className="text-lg text-indigo-900 font-bold capitalize">
+                          {statusKey}
+                        </h3>
+                        <span className="text-xs bg-sky-200 text-indigo-900 px-2 py-0.5 rounded-full font-medium">
+                          {tasks[statusKey].length}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-300px)]">
+                        {tasks[statusKey].length > 0 ? (
+                          tasks[statusKey].map((task, idx) => (
+                            <Draggable
+                              key={task._id}
+                              draggableId={task._id}
+                              index={idx}
+                            >
+                              {(provided, snapshot) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  className={`bg-white border border-gray-200 rounded-xl p-4 shadow-md cursor-grab transition ${
+                                    snapshot.isDragging
+                                      ? "ring-4 ring-sky-400 opacity-90"
+                                      : "hover:shadow-lg"
+                                  }`}
+                                >
+                                  <div className="flex justify-between items-start mb-3">
+                                    <div>
+                                      <h4 className="font-semibold text-indigo-900">
+                                        {task.title}
+                                      </h4>
+                                      <p className="text-sm text-gray-500 mt-1">
+                                        {task.description?.slice(0, 60) || ""}
+                                      </p>
+                                    </div>
+                                    <FiTrash2
+                                      className="text-red-500 cursor-pointer hover:text-red-700"
+                                      onClick={() =>
+                                        handleDeleteTask(task._id, statusKey)
+                                      }
+                                    />
+                                  </div>
+
+                                  <div className="flex justify-between items-center text-xs mt-2">
+                                    <span
+                                      className={`font-semibold px-3 py-1 rounded-full ${
+                                        task.priority === "High"
+                                          ? "bg-red-100 text-red-700"
+                                          : task.priority === "Medium"
+                                          ? "bg-yellow-100 text-yellow-700"
+                                          : "bg-green-100 text-green-700"
+                                      }`}
+                                    >
+                                      {task.priority}
+                                    </span>
+
+                                    <div className="flex -space-x-2">
+                                      {task.assignees?.map((emp) => {
+                                        const found = employees.find(
+                                          (e) => e._id === (emp._id || emp)
+                                        );
+                                        return (
+                                          <img
+                                            key={emp._id || emp}
+                                            src={
+                                              found?.avatar ||
+                                              "https://via.placeholder.com/40"
+                                            }
+                                            alt={found?.name}
+                                            className="w-7 h-7 rounded-full border-2 border-sky-300 object-cover"
+                                          />
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </Draggable>
+                          ))
+                        ) : (
+                          <p className="text-center text-gray-400 text-sm py-3">
+                            No tasks here.
+                          </p>
+                        )}
+                        {provided.placeholder}
+                      </div>
+                    </div>
+                  )}
+                </Droppable>
+              ))}
+            </div>
+          </DragDropContext>
+        </main>
+      </div>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl border border-gray-100">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h2 className="text-xl font-bold text-indigo-900">
+                  Add New Task
+                </h2>
+                <p className="text-gray-500 text-sm">
+                  Fill in task details below
+                </p>
+              </div>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-gray-500 hover:text-red-500 transition"
+              >
+                <FiX size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Project <span className="text-red-500">*</span>
+                </label>
+
+                {newTask.project && (
+                  <div className="flex items-center gap-2 mb-2">
+                    {(() => {
+                      const proj = projects.find(
+                        (p) => p._id === newTask.project
+                      );
+                      if (!proj) return null;
+                      return (
+                        <div className="flex items-center gap-1 bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-xs font-medium shadow-sm">
+                          <span>{proj.name}</span>
+                          <FiX
+                            size={12}
+                            className="cursor-pointer hover:text-red-500"
+                            onClick={() =>
+                              setNewTask({ ...newTask, project: "" })
+                            }
+                          />
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+
+                {!newTask.project && (
+                  <select
+                    onChange={(e) => {
+                      const projId = e.target.value;
+                      if (projId) {
+                        setNewTask({ ...newTask, project: projId });
+                      }
+                      e.target.value = "";
+                    }}
+                    className="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none bg-white"
+                  >
+                    <option value="">Select Project...</option>
+                    {projects.map((proj) => (
+                      <option key={proj._id} value={proj._id}>
+                        {proj.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Task Title <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Implement user authentication"
+                  className="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none"
+                  value={newTask.title}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, title: e.target.value })
+                  }
+                />
+              </div>
+              {/* Status */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  className="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none"
+                  value={newTask.status || "backlog"}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, status: e.target.value })
+                  }
+                >
+                  <option value="backlog">Backlog</option>
+                  <option value="todo">To Do</option>
+                  <option value="inprogress">In Progress</option>
+                  <option value="done">Done</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="Add task details..."
+                  className="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none resize-none"
+                  value={newTask.description}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, description: e.target.value })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Assign Employees
+                </label>
+
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {newTask.assignees.map((empId) => {
+                    const emp = employees.find((e) => e._id === empId);
+                    if (!emp) return null;
+                    return (
+                      <div
+                        key={emp._id}
+                        className="flex items-center gap-1 bg-sky-100 text-sky-800 px-3 py-1 rounded-full text-xs font-medium shadow-sm"
+                      >
+                        <img
+                          src={emp.avatar || "https://via.placeholder.com/32"}
+                          alt={emp.name}
+                          className="w-5 h-5 rounded-full border border-white object-cover"
+                        />
+                        <span>{emp.name}</span>
+                        <FiX
+                          size={12}
+                          className="cursor-pointer hover:text-red-500"
+                          onClick={() =>
+                            setNewTask({
+                              ...newTask,
+                              assignees: newTask.assignees.filter(
+                                (id) => id !== empId
+                              ),
+                            })
+                          }
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <select
+                  onChange={(e) => {
+                    const empId = e.target.value;
+                    if (empId && !newTask.assignees.includes(empId)) {
+                      setNewTask({
+                        ...newTask,
+                        assignees: [...newTask.assignees, empId],
+                      });
+                    }
+                    e.target.value = "";
+                  }}
+                  className="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none bg-white"
+                >
+                  <option value="">Select employee to assign...</option>
+                  {employees.map((emp) => (
+                    <option key={emp._id} value={emp._id}>
+                      {emp.name} — {emp.role}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Priority
+                </label>
+                <select
+                  className="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none"
+                  value={newTask.priority}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, priority: e.target.value })
+                  }
+                >
+                  <option>Low</option>
+                  <option>Medium</option>
+                  <option>High</option>
+                </select>
+              </div>
+
+              <button
+                onClick={handleCreateTask}
+                className={`w-full bg-${primaryBlue} hover:bg-${primaryBlueHover} text-white py-3 rounded-xl font-semibold shadow-md transition`}
+              >
+                Create Task
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

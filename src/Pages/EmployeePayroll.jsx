@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "../component/Sidebar";
 import { jwtDecode } from "jwt-decode";
-import { FiDollarSign, FiCalendar, FiCheckCircle, FiXCircle } from "react-icons/fi";
+import {
+  FiDollarSign,
+  FiCalendar,
+  FiCheckCircle,
+  FiXCircle,
+} from "react-icons/fi";
 
 export default function EmployeePayroll() {
   const [payrolls, setPayrolls] = useState([]);
@@ -10,7 +15,7 @@ export default function EmployeePayroll() {
   // Decode employee ID from token
   const token = localStorage.getItem("token");
   const decoded = token ? jwtDecode(token) : null;
-  const employeeId ="68ece7fad0fa337d518f5a0c"||  decoded?._id; 
+  const employeeId = decoded?._id;
 
   useEffect(() => {
     const fetchEmployeePayroll = async () => {

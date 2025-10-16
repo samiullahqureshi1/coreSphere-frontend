@@ -9,7 +9,7 @@ export default function EmployeeAttendance() {
 
   const token = localStorage.getItem("token");
   const decoded = token ? jwtDecode(token) : null;
-  const employeeId ="68ece7fad0fa337d518f5a0c"||  decoded?._id; 
+  const employeeId =  decoded?._id; 
 
   useEffect(() => {
     const fetchMyAttendance = async () => {

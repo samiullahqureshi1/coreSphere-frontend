@@ -20,10 +20,9 @@ export default function EmployeeLeaveManagement() {
     reason: "",
   });
 
-  // Decode employee ID from token
   const token = localStorage.getItem("token");
   const decoded = token ? jwtDecode(token) : null;
-  const employeeId ="68ece7fad0fa337d518f5a0c"|| decoded?._id;
+  const employeeId = decoded?._id;
 
   useEffect(() => {
     const fetchLeaves = async () => {
@@ -51,53 +50,53 @@ export default function EmployeeLeaveManagement() {
   }, [employeeId]);
 
   const handleApplyLeave = async () => {
-  if (
-    !newLeave.leaveType.trim() ||
-    !newLeave.startDate ||
-    !newLeave.endDate ||
-    !newLeave.reason.trim()
-  ) {
-    alert("Please fill in all required fields!");
-    return;
-  }
-
-  try {
-    const res = await fetch("https://core-sphere-backend.vercel.app/Leave/addLeave", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        employeeId, 
-        leaveType: newLeave.leaveType,
-        startDate: newLeave.startDate,
-        endDate: newLeave.endDate,
-        reason: newLeave.reason,
-      }),
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      // ✅ Update UI immediately
-      setLeaves((prev) => [data.leave, ...prev]);
-      setShowModal(false);
-      setNewLeave({ leaveType: "", startDate: "", endDate: "", reason: "" });
-      alert("✅ Leave submitted successfully!");
-    } else {
-      alert(data.message);
+    if (
+      !newLeave.leaveType.trim() ||
+      !newLeave.startDate ||
+      !newLeave.endDate ||
+      !newLeave.reason.trim()
+    ) {
+      alert("Please fill in all required fields!");
+      return;
     }
-  } catch (err) {
-    console.error("Error applying leave:", err);
-    alert("❌ Failed to apply for leave");
-  }
-};
 
+    try {
+      const res = await fetch(
+        "https://core-sphere-backend.vercel.app/Leave/addLeave",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            employeeId,
+            leaveType: newLeave.leaveType,
+            startDate: newLeave.startDate,
+            endDate: newLeave.endDate,
+            reason: newLeave.reason,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        setLeaves((prev) => [data.leave, ...prev]);
+        setShowModal(false);
+        setNewLeave({ leaveType: "", startDate: "", endDate: "", reason: "" });
+        alert("✅ Leave submitted successfully!");
+      } else {
+        alert(data.message);
+      }
+    } catch (err) {
+      console.error("Error applying leave:", err);
+      alert("❌ Failed to apply for leave");
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
 
       <div className="flex-1 flex flex-col">
-        {/* === Header === */}
         <header className="flex justify-between items-center bg-white px-8 py-5 shadow-md border-b">
           <div>
             <h1 className="flex items-center gap-2 text-2xl font-bold text-indigo-900">
@@ -117,7 +116,6 @@ export default function EmployeeLeaveManagement() {
           </button>
         </header>
 
-        {/* === Leave List === */}
         <main className="p-8 overflow-y-auto">
           {loading ? (
             <div className="flex justify-center items-center h-64 text-gray-500 text-lg">
@@ -197,7 +195,6 @@ export default function EmployeeLeaveManagement() {
         </main>
       </div>
 
-      {/* === Apply Leave Modal === */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl border border-gray-100">

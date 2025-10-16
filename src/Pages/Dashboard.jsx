@@ -64,7 +64,7 @@ export default function Dashboard() {
     const employeeId = localStorage.getItem("userid");
 
     const res = await fetch(
-      `https://core-sphere-backend.vercel.app/Employee/getCheckInStatus/68ece7fad0fa337d518f5a0c`,
+      `https://core-sphere-backend.vercel.app/Employee/getCheckInStatus/${employeeId}`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }
@@ -81,7 +81,7 @@ export default function Dashboard() {
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        `https://core-sphere-backend.vercel.app/Employee/updateCheckin/68ece7fad0fa337d518f5a0c`,
+        `https://core-sphere-backend.vercel.app/Employee/updateCheckin/${userId}`,
         {
           method: "POST",
           headers: {
