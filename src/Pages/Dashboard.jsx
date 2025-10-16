@@ -61,7 +61,7 @@ export default function Dashboard() {
 
   const fetchAttendanceStatus = async () => {
     const token = localStorage.getItem("token");
-    const employeeId = localStorage.getItem("userid");
+    const employeeId = localStorage.getItem("employeeId")
 
     const res = await fetch(
       `https://core-sphere-backend.vercel.app/Employee/getCheckInStatus/${employeeId}`,
@@ -75,36 +75,40 @@ export default function Dashboard() {
   useEffect(() => {
     fetchAttendanceStatus();
   }, []);
-  const handleCheckInOut = async () => {
-    try {
-      const userId = localStorage.getItem("userid");
-      const token = localStorage.getItem("token");
+const handleCheckInOut = async () => {
+  try {
+    const userId = localStorage.getItem("employeeId");
+    const token = localStorage.getItem("token");
 
-      const res = await fetch(
-        `https://core-sphere-backend.vercel.app/Employee/updateCheckin/${userId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data = await res.json();
-
-      if (res.ok) {
-        alert(data.message);
-        if (data.status === "checked-in") setCheckedIn(true);
-        else if (data.status === "checked-out") setCheckedIn(false);
-      } else {
-        alert(data.message || "Error processing request");
+    const res = await fetch(
+      `https://core-sphere-backend.vercel.app/Employee/updateCheckin/${userId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       }
-    } catch (err) {
-      console.error("Error:", err);
-      alert("Something went wrong!");
+    );
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert(data.message);
+
+      if (data.status === "checked-in") setCheckedIn(true);
+      else if (data.status === "checked-out") setCheckedIn(false);
+
+      window.location.reload();
+    } else {
+      alert(data.message || "Error processing request");
     }
-  };
+  } catch (err) {
+    console.error("Error:", err);
+    alert("Something went wrong!");
+  }
+};
+
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -127,32 +131,29 @@ export default function Dashboard() {
     );
   }
 
-  const role = user.role?.toLowerCase(); // admin | employee | hr | manager
+  const role = user.role?.toLowerCase(); 
 
-  // ===== Theme Colors (Consistent with Sidebar) =====
   const primaryColor = "text-sky-500";
   const darkTextColor = "text-indigo-900";
-  const lightBg = "bg-gray-50"; // Main page background
+  const lightBg = "bg-gray-50";
 
-  // ===== Sample Data with Theme Colors =====
   const dealsData = [
-    { stage: "Lead", value: 1, fill: "#3b82f6" }, // Blue-500
-    { stage: "Qualified", value: 2, fill: "#f97316" }, // Orange-500
-    { stage: "Proposal", value: 1, fill: "#10b981" }, // Emerald-500
-    { stage: "Negotiation", value: 1, fill: "#a855f7" }, // Purple-500
-    { stage: "Closed", value: 1, fill: "#06b6d4" }, // Cyan-500
+    { stage: "Lead", value: 1, fill: "#3b82f6" }, 
+    { stage: "Qualified", value: 2, fill: "#f97316" }, 
+    { stage: "Proposal", value: 1, fill: "#10b981" }, 
+    { stage: "Negotiation", value: 1, fill: "#a855f7" },
+    { stage: "Closed", value: 1, fill: "#06b6d4" }, 
   ];
 
   const tasksData = [
-    { name: "In Progress", value: 40, fill: "#3b82f6" }, // Blue
-    { name: "Completed", value: 30, fill: "#10b981" }, // Emerald (Success)
-    { name: "Pending", value: 20, fill: "#f97316" }, // Orange (Warning)
-    { name: "Cancelled", value: 10, fill: "#ef4444" }, // Red (Danger)
+    { name: "In Progress", value: 40, fill: "#3b82f6" },
+    { name: "Completed", value: 30, fill: "#10b981" }, 
+    { name: "Pending", value: 20, fill: "#f97316" }, 
+    { name: "Cancelled", value: 10, fill: "#ef4444" }, 
   ];
 
   const pieColors = tasksData.map((item) => item.fill);
 
-  // ===== Shared Top Bar Stats (Icons updated to use Primary Color) =====
   const stats = {
     admin: [
       {
@@ -295,7 +296,6 @@ export default function Dashboard() {
       <Sidebar />
 
       <div className="flex-1 flex flex-col">
-        {/* ===== HEADER (Refined) ===== */}
         <header className="flex justify-between items-center bg-white px-8 py-5 shadow-lg z-10">
           <div>
             <h1
@@ -350,16 +350,13 @@ export default function Dashboard() {
           </div>
         </header>
 
-        {/* ===== MAIN CONTENT (Padded and Themed) ===== */}
         <main className="flex-1 p-8 overflow-y-auto">
-          {/* ===== ADMIN VIEW ===== */}
           {role === "admin" && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 {stats.admin.map((item) => (
                   <div
                     key={item.title}
-                    // Updated card style
                     className="bg-white shadow-lg transition duration-300 hover:shadow-xl rounded-2xl p-6 border-t-4 border-sky-400"
                   >
                     <div className="flex justify-between items-start mb-2">

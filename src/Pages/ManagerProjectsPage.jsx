@@ -150,7 +150,7 @@ export default function ManagerProjects() {
                       <th className="p-3 border-b text-center">Status</th>
                       <th className="p-3 border-b text-center">Start Date</th>
                       <th className="p-3 border-b text-center">Deadline</th>
-                      <th className="p-3 border-b text-right">Budget</th>
+                      <th className="p-3 border-b text-right">Working Hours</th>
                       <th className="p-3 border-b text-center">Actions</th>
                     </tr>
                   </thead>
@@ -165,8 +165,10 @@ export default function ManagerProjects() {
                           <div>
                             <p className="truncate">{p.name}</p>
                             {p.description && (
-                              <p className="text-xs text-gray-500 truncate mt-1">
-                                {p.description}
+                              <p className="text-xs text-gray-500 mt-1">
+                                {p.description.length > 50
+                                  ? p.description.slice(0, 50) + "..."
+                                  : p.description}
                               </p>
                             )}
                           </div>
@@ -199,8 +201,8 @@ export default function ManagerProjects() {
                             : "—"}
                         </td>
 
-                        <td className="p-3 text-right font-semibold text-indigo-900">
-                          ${p.budget?.toLocaleString() || 0}
+                        <td className="p-3 text-center font-semibold text-indigo-900">
+                          {p.workingHours || 0} hrs
                         </td>
 
                         <td className="p-3 text-center">

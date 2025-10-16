@@ -15,38 +15,40 @@ const Login = () => {
     });
   };
 
- const handleLogin = async (e) => {
-  e.preventDefault();
-  setErrorMsg("");
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setErrorMsg("");
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const response = await fetch("https://core-sphere-backend.vercel.app/auth/signIn", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    });
+      const response = await fetch("https://core-sphere-backend.vercel.app/auth/signIn", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.error || "Invalid credentials");
+      if (!response.ok) {
+        throw new Error(data.error || "Invalid credentials");
+      }
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("userid", data.user._id);
+      if (data.user.employeeRef) {
+        localStorage.setItem("employeeId", data.user.employeeRef);
+      }
+      navigate("/dashboard");
+    } catch (error) {
+      console.error(error);
+      setErrorMsg(error.message);
+    } finally {
+      setLoading(false);
     }
-
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("userid", data.user._id);
-
-    navigate("/dashboard");
-  } catch (error) {
-    console.error(error);
-    setErrorMsg(error.message);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-100 to-gray-200">

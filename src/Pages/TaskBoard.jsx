@@ -336,12 +336,10 @@ export default function TaskBoard() {
               ></div>
 
               <div
-                className={`fixed top-0 right-0 w-[480px] h-full bg-white shadow-2xl z-50 overflow-y-auto transition-transform duration-300`}
+                className={`fixed top-0 right-0 w-[480px] h-full bg-white shadow-2xl z-50 flex flex-col transition-transform duration-300`}
               >
                 {/* === Header === */}
-                <div
-                  className={`flex justify-between items-center border-b border-gray-100 px-6 py-5 bg-indigo-50`}
-                >
+                <div className="flex justify-between items-center border-b border-gray-100 px-6 py-5 bg-indigo-50">
                   <div>
                     <h2 className={`text-xl font-bold text-${darkIndigo}`}>
                       Task Details
@@ -358,8 +356,8 @@ export default function TaskBoard() {
                   />
                 </div>
 
-                {/* === Content === */}
-                <div className="p-6 space-y-6">
+                {/* === Scrollable Content === */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-6">
                   {/* Title */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">
@@ -374,7 +372,7 @@ export default function TaskBoard() {
                           title: e.target.value,
                         })
                       }
-                      className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-${primaryBlue} outline-none transition"
+                      className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition"
                     />
                   </div>
 
@@ -392,7 +390,7 @@ export default function TaskBoard() {
                           description: e.target.value,
                         })
                       }
-                      className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-${primaryBlue} outline-none transition"
+                      className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition"
                       placeholder="Describe the task..."
                     />
                   </div>
@@ -410,7 +408,7 @@ export default function TaskBoard() {
                           priority: e.target.value,
                         })
                       }
-                      className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-${primaryBlue} outline-none transition"
+                      className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition"
                     >
                       <option>Low</option>
                       <option>Medium</option>
@@ -425,14 +423,13 @@ export default function TaskBoard() {
                     </label>
                     <div className="flex flex-wrap gap-3 mb-3">
                       {selectedTask.assignees?.map((emp) => {
-                        // Check if emp is an object (preferred) or just an ID string
                         const empId = emp._id || emp;
                         const empData = employees.find((e) => e._id === empId);
                         if (!empData) return null;
                         return (
                           <div
                             key={empId}
-                            className={`flex items-center gap-2 bg-sky-100 text-sky-700 font-medium px-3 py-1.5 rounded-full text-sm border border-sky-200`}
+                            className="flex items-center gap-2 bg-sky-100 text-sky-700 font-medium px-3 py-1.5 rounded-full text-sm border border-sky-200"
                           >
                             <img
                               src={
@@ -463,13 +460,11 @@ export default function TaskBoard() {
                     <select
                       onChange={(e) => {
                         const empId = e.target.value;
-                        // Check if assignee is already added (by ID)
                         const isAlreadyAssigned = selectedTask.assignees.some(
                           (item) => (item._id || item) === empId
                         );
 
                         if (!isAlreadyAssigned && empId) {
-                          // Find the full employee object to append
                           const empToAdd = employees.find(
                             (e) => e._id === empId
                           );
@@ -481,7 +476,7 @@ export default function TaskBoard() {
                           }
                         }
                       }}
-                      className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-${primaryBlue} outline-none transition"
+                      className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition"
                       defaultValue=""
                     >
                       <option value="" disabled>
@@ -494,166 +489,10 @@ export default function TaskBoard() {
                       ))}
                     </select>
                   </div>
+                </div>
 
-                  {/* Subtasks */}
-                  <div className="pt-2 border-t border-gray-100">
-                    <div className="flex justify-between items-center mb-3">
-                      <label
-                        className={`block text-lg font-bold text-${darkIndigo}`}
-                      >
-                        Subtasks
-                      </label>
-                      <span className="text-sm text-gray-500 font-medium">
-                        {selectedTask.subtasks?.length || 0} total
-                      </span>
-                    </div>
-
-                    {/* Subtask list */}
-                    {selectedTask.subtasks?.length > 0 ? (
-                      <ul className="space-y-3">
-                        {selectedTask.subtasks.map((st, i) => (
-                          <li
-                            key={i}
-                            className="flex justify-between items-center border border-gray-200 rounded-xl p-3 bg-white hover:bg-gray-50 transition shadow-sm"
-                          >
-                            <div className="flex items-center gap-3">
-                              <input
-                                type="checkbox"
-                                checked={st.completed}
-                                onChange={async (e) => {
-                                  const updatedSubtasks =
-                                    selectedTask.subtasks.map((s, idx) =>
-                                      idx === i
-                                        ? { ...s, completed: e.target.checked }
-                                        : s
-                                    );
-                                  const res = await fetch(
-                                    `https://core-sphere-backend.vercel.app/api/task/update/${selectedTask._id}`,
-                                    {
-                                      method: "PUT",
-                                      headers: {
-                                        "Content-Type": "application/json",
-                                      },
-                                      body: JSON.stringify({
-                                        subtasks: updatedSubtasks,
-                                      }),
-                                    }
-                                  );
-                                  const data = await res.json();
-                                  if (data.success) setSelectedTask(data.task);
-                                }}
-                                className={`form-checkbox h-5 w-5 text-${primaryBlue} rounded border-gray-300 focus:ring-${primaryBlue}`}
-                              />
-                              <div>
-                                <p
-                                  className={`text-sm font-semibold ${
-                                    st.completed
-                                      ? "line-through text-gray-500"
-                                      : "text-gray-800"
-                                  }`}
-                                >
-                                  {st.title}
-                                </p>
-                                {st.assignee && (
-                                  <div className="flex items-center gap-1 text-xs text-gray-600 mt-1">
-                                    <img
-                                      src={
-                                        employees.find(
-                                          (e) => e._id === st.assignee
-                                        )?.avatar
-                                      }
-                                      alt=""
-                                      className="w-4 h-4 rounded-full object-cover"
-                                    />
-                                    <span>
-                                      {
-                                        employees.find(
-                                          (e) => e._id === st.assignee
-                                        )?.name
-                                      }
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-
-                            <FiTrash2
-                              className="text-gray-400 cursor-pointer hover:text-red-500"
-                              size={16}
-                            />
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-sm text-gray-400 p-2 border border-dashed rounded-lg text-center">
-                        No subtasks yet. Add one below!
-                      </p>
-                    )}
-
-                    {/* Add new subtask */}
-                    <div
-                      className={`border border-sky-200 rounded-xl p-4 mt-4 bg-sky-50`}
-                    >
-                      <p className="text-sm font-bold text-gray-800 mb-2">
-                        Add New Subtask
-                      </p>
-                      <input
-                        type="text"
-                        placeholder="Subtask title..."
-                        value={newSubtask}
-                        onChange={(e) => setNewSubtask(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg p-2 text-sm mb-2 focus:ring-2 focus:ring-${primaryBlue} outline-none transition"
-                      />
-                      <select
-                        onChange={(e) =>
-                          setSelectedTask({
-                            ...selectedTask,
-                            subAssignee: e.target.value,
-                          })
-                        }
-                        className="w-full border border-gray-300 rounded-lg p-2 mb-3 focus:ring-2 focus:ring-${primaryBlue} outline-none transition"
-                      >
-                        <option value="">Assign employee (optional)</option>
-                        {employees.map((emp) => (
-                          <option key={emp._id} value={emp._id}>
-                            {emp.name} - {emp.role}
-                          </option>
-                        ))}
-                      </select>
-
-                      <button
-                        onClick={async () => {
-                          if (!newSubtask.trim()) return;
-                          const res = await fetch(
-                            `https://core-sphere-backend.vercel.app/api/task/subtask/${selectedTask._id}`,
-                            {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({
-                                title: newSubtask,
-                                assignee: selectedTask.subAssignee || null,
-                              }),
-                            }
-                          );
-                          const data = await res.json();
-                          if (data.success) {
-                            setSelectedTask(data.task);
-                            setNewSubtask("");
-                            // Clear subAssignee after adding
-                            setSelectedTask((prev) => ({
-                              ...prev,
-                              subAssignee: "",
-                            }));
-                          }
-                        }}
-                        className={`w-full bg-${primaryBlue} text-white py-2 rounded-lg hover:bg-${primaryBlueHover} transition text-sm font-semibold`}
-                      >
-                        Add Subtask
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Save Task Button */}
+                {/* === Fixed Footer Button === */}
+                <div className="p-4 border-t border-gray-200 bg-white sticky bottom-0">
                   <button
                     onClick={async () => {
                       const res = await fetch(
@@ -661,26 +500,21 @@ export default function TaskBoard() {
                         {
                           method: "PUT",
                           headers: { "Content-Type": "application/json" },
-                          // Only send properties that are relevant for update and exist in the schema
                           body: JSON.stringify({
                             title: selectedTask.title,
                             description: selectedTask.description,
                             priority: selectedTask.priority,
-                            // Ensure assignees are stored as IDs or objects based on backend expectation
                             assignees: selectedTask.assignees.map(
                               (a) => a._id || a
                             ),
-                            // Note: subtasks and status are updated via separate logic/endpoints
                           }),
                         }
                       );
                       const data = await res.json();
                       if (data.success) {
                         alert("Task updated successfully!");
-                        // To update the Kanban board immediately without full reload
                         setTasks((prevTasks) => {
                           const updatedTasks = { ...prevTasks };
-                          // Find and replace the task in its current column
                           for (const col in updatedTasks) {
                             const index = updatedTasks[col].findIndex(
                               (t) => t._id === data.task._id
@@ -692,13 +526,12 @@ export default function TaskBoard() {
                           }
                           return updatedTasks;
                         });
-
                         setShowDrawer(false);
                       } else {
                         alert(data.message || "Failed to save task changes.");
                       }
                     }}
-                    className={`w-full bg-${darkIndigo} hover:bg-indigo-950 text-white py-3 rounded-xl mt-4 font-bold text-lg transition shadow-xl`}
+                    className={`w-full bg-${darkIndigo} hover:bg-indigo-950 text-white py-3 rounded-xl font-bold text-lg transition shadow-xl`}
                   >
                     Save All Changes
                   </button>
@@ -896,8 +729,7 @@ export default function TaskBoard() {
 }
 function EmployeeTaskBoard() {
   const [employeeTasks, setEmployeeTasks] = useState({
-    backlog: [],
-    todo: [],
+    pending: [],
     inprogress: [],
     done: [],
   });
@@ -905,80 +737,110 @@ function EmployeeTaskBoard() {
 
   const token = localStorage.getItem("token");
   const decoded = token ? jwtDecode(token) : null;
-  const userId = decoded._id;
+  const userId = localStorage.getItem("employeeId");
 
-  useEffect(() => {
-    const fetchEmployeeTasks = async () => {
-      try {
-        if (!userId) return;
-
-        const res = await fetch(
-          `https://core-sphere-backend.vercel.app/api/task/getByEmployee/${userId}`
-        );
-        const data = await res.json();
-
-        if (data.success) {
-          const grouped = { backlog: [], todo: [], inprogress: [], done: [] };
-          data.tasks.forEach((task) => grouped[task.status].push(task));
-          setEmployeeTasks(grouped);
-        } else {
-          console.error("Error fetching employee tasks:", data.message);
-        }
-      } catch (err) {
-        console.error("Error fetching employee tasks:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEmployeeTasks();
-  }, [userId]);
-
-  // === Handle Drag and Drop ===
-  const handleDragEnd = async (result) => {
-    const { source, destination } = result;
-    if (!destination) return;
-
-    if (
-      source.droppableId === destination.droppableId &&
-      source.index === destination.index
-    )
-      return;
-
-    const sourceCol = source.droppableId;
-    const destCol = destination.droppableId;
-
-    const movedTask = employeeTasks[sourceCol][source.index];
-
-    const updatedSource = Array.from(employeeTasks[sourceCol]);
-    updatedSource.splice(source.index, 1);
-
-    const updatedDest = Array.from(employeeTasks[destCol]);
-    updatedDest.splice(destination.index, 0, { ...movedTask, status: destCol });
-
-    const updatedTasks = {
-      ...employeeTasks,
-      [sourceCol]: updatedSource,
-      [destCol]: updatedDest,
-    };
-    setEmployeeTasks(updatedTasks);
-
+useEffect(() => {
+  const fetchEmployeeTasks = async () => {
     try {
-      await fetch(
-        `https://core-sphere-backend.vercel.app/api/task/updateTaskStatus/${movedTask._id}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: destCol }),
-        }
+      if (!userId) return;
+
+      const res = await fetch(
+        `https://core-sphere-backend.vercel.app/api/task/getByEmployee/${userId}`
       );
-    } catch (error) {
-      console.error("Failed to update task status:", error);
-      alert("❌ Could not update task status in database");
+      const data = await res.json();
+
+      if (data.success && data.tasks) {
+        // 👇 Group tasks by the *employee’s* personal status
+        const grouped = { pending: [], inprogress: [], done: [] };
+
+        data.tasks.forEach((task) => {
+          // Find this employee's assignment in the task
+          const myAssignment = task.assignees.find(
+            (a) =>
+              a.employee === userId ||
+              a.employee?._id === userId // handles both object or string
+          );
+
+          // Use employee-specific status, fallback to task.status
+          const myStatus = myAssignment?.status || task.status || "pending";
+
+          if (myStatus === "pending" || myStatus === "todo" || myStatus === "backlog") {
+            grouped.pending.push(task);
+          } else if (myStatus === "inprogress") {
+            grouped.inprogress.push(task);
+          } else if (myStatus === "done") {
+            grouped.done.push(task);
+          }
+        });
+
+        setEmployeeTasks(grouped); // ✅ finally update state
+      } else {
+        console.error("Error fetching employee tasks:", data.message);
+      }
+    } catch (err) {
+      console.error("Error fetching employee tasks:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Format seconds to hh:mm:ss
+  fetchEmployeeTasks();
+}, [userId]);
+
+
+  const handleDragEnd = async (result) => {
+  const { source, destination } = result;
+  if (!destination) return;
+
+  if (
+    source.droppableId === destination.droppableId &&
+    source.index === destination.index
+  )
+    return;
+
+  const sourceCol = source.droppableId;
+  const destCol = destination.droppableId;
+  const movedTask = employeeTasks[sourceCol][source.index];
+  const userId = localStorage.getItem("employeeId");
+
+  const updatedSource = Array.from(employeeTasks[sourceCol]);
+  updatedSource.splice(source.index, 1);
+
+  const updatedDest = Array.from(employeeTasks[destCol]);
+  updatedDest.splice(destination.index, 0, { ...movedTask, status: destCol });
+
+  const updatedTasks = {
+    ...employeeTasks,
+    [sourceCol]: updatedSource,
+    [destCol]: updatedDest,
+  };
+  setEmployeeTasks(updatedTasks);
+
+  try {
+    const res = await fetch(
+      `https://core-sphere-backend.vercel.app/api/task/updateEmployeeTaskStatus/${movedTask._id}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          employeeId: userId,
+          status: destCol,    
+        }),
+      }
+    );
+
+    const data = await res.json();
+    if (!data.success) {
+      console.error("Error updating task:", data.message);
+      alert(data.message || " Could not update task status in database");
+    }
+  } catch (error) {
+    console.error("Failed to update task status:", error);
+    alert(" Could not update task status in database");
+  }
+};
+
+
   function formatTime(seconds) {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
@@ -1003,8 +865,7 @@ function EmployeeTaskBoard() {
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="flex gap-6 min-w-[1000px] overflow-x-auto pb-4">
           {[
-            { key: "backlog", title: "Backlog" },
-            { key: "todo", title: "To Do" },
+            { key: "pending", title: "Pending" },
             { key: "inprogress", title: "In Progress" },
             { key: "done", title: "Done" },
           ].map((column) => (
@@ -1131,6 +992,8 @@ function TaskCard({ task, idx, userId }) {
                       body: JSON.stringify({ employeeId: userId }),
                     }
                   );
+
+                  window.location.reload();
                 }}
                 className="text-white bg-red-500 hover:bg-red-600 px-4 py-1 rounded-lg text-xs font-semibold shadow-sm transition"
               >
@@ -1147,6 +1010,8 @@ function TaskCard({ task, idx, userId }) {
                       body: JSON.stringify({ employeeId: userId }),
                     }
                   );
+
+                  window.location.reload();
                 }}
                 className="text-white bg-green-500 hover:bg-green-600 px-4 py-1 rounded-lg text-xs font-semibold shadow-sm transition"
               >

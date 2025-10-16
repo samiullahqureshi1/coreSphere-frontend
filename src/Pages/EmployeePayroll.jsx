@@ -15,7 +15,7 @@ export default function EmployeePayroll() {
   // Decode employee ID from token
   const token = localStorage.getItem("token");
   const decoded = token ? jwtDecode(token) : null;
-  const employeeId = decoded?._id;
+  const employeeId = localStorage.getItem("employeeId");
 
   useEffect(() => {
     const fetchEmployeePayroll = async () => {

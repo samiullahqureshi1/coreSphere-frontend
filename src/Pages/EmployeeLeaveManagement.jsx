@@ -22,7 +22,7 @@ export default function EmployeeLeaveManagement() {
 
   const token = localStorage.getItem("token");
   const decoded = token ? jwtDecode(token) : null;
-  const employeeId = decoded?._id;
+  const employeeId = localStorage.getItem("employeeId");
 
   useEffect(() => {
     const fetchLeaves = async () => {

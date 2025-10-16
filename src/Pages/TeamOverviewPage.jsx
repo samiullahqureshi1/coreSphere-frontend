@@ -82,7 +82,7 @@ export default function TeamOverviewPage() {
                     </p>
                     <p className="flex items-center gap-2">
                       <FiCalendar className="text-gray-400" /> Joined:{" "}
-                      {new Date(member.joinDate).toLocaleDateString("en-GB")}
+                      {new Date(member.joiningDate).toLocaleDateString("en-GB")}
                     </p>
                     <p className="flex items-center gap-2">
                       <FiTrendingUp className="text-gray-400" /> Performance:{" "}

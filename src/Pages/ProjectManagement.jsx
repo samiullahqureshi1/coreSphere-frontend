@@ -20,6 +20,7 @@ export default function ProjectManagement() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState([]);
+  const [timeTrackingData, setTimeTrackingData] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
     client: "",
@@ -52,6 +53,31 @@ export default function ProjectManagement() {
 
     fetchProjects();
   }, []);
+  useEffect(() => {
+    const fetchTimeTracking = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(
+          "https://core-sphere-backend.vercel.app/api/task/time-tracking-summary"
+        );
+        const data = await res.json();
+
+        if (data.success) {
+          setTimeTrackingData(data.projects || []);
+        } else {
+          console.error("Failed to fetch:", data.message);
+        }
+      } catch (err) {
+        console.error("Error fetching time tracking:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (activeTab === "timeTracking") {
+      fetchTimeTracking();
+    }
+  }, [activeTab]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -265,9 +291,9 @@ export default function ProjectManagement() {
           title: newTask.title,
           description: newTask.description,
           priority: newTask.priority,
-          status: newTask.status, 
+          status: newTask.status,
           assignees: newTask.assignees,
-          projectId: newTask.project, 
+          projectId: newTask.project,
         }),
       });
 
@@ -285,7 +311,7 @@ export default function ProjectManagement() {
           description: "",
           assignees: [],
           priority: "Medium",
-          project: "", 
+          project: "",
         });
       } else {
         alert(data.message);
@@ -326,7 +352,7 @@ export default function ProjectManagement() {
               { key: "projects", label: "Projects", icon: <FiBriefcase /> },
               { key: "tasks", label: "Tasks", icon: <FiCheckSquare /> },
               { key: "teams", label: "Teams", icon: <FiUsers /> },
-              { key: "clients", label: "Clients", icon: <FiUser /> },
+              // { key: "clients", label: "Clients", icon: <FiUser /> },
               {
                 key: "timeTracking",
                 label: "Time Tracking",
@@ -394,11 +420,14 @@ export default function ProjectManagement() {
                           <td className="p-3 font-semibold text-gray-800">
                             <div>
                               <p className="truncate">{p.name}</p>
-                              {p.description && (
-                                <p className="text-xs text-gray-500 truncate mt-1">
-                                  {p.description}
-                                </p>
-                              )}
+                             {p.description && (
+  <p className="text-xs text-gray-500 mt-1">
+    {p.description.length > 50 
+      ? p.description.slice(0, 50) + "..." 
+      : p.description}
+  </p>
+)}
+
                             </div>
                           </td>
 
@@ -564,13 +593,95 @@ export default function ProjectManagement() {
           )}
 
           {activeTab === "timeTracking" && (
-            <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
-              <h2 className="text-xl font-bold text-indigo-900 mb-3">
-                Time Tracking
-              </h2>
-              <p className="text-gray-500 text-sm">
-                Monitor employee timesheets and work logs.
-              </p>
+            <div className="bg-gradient-to-b from-indigo-50 to-white p-8 rounded-2xl shadow-xl border border-indigo-100">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-extrabold text-indigo-900 tracking-tight">
+                    Time Tracking Overview
+                  </h2>
+                  <p className="text-gray-500 text-sm mt-1">
+                    Monitor and analyze total working hours across all active
+                    projects.
+                  </p>
+                </div>
+                <div className="px-4 py-2 bg-indigo-100 text-indigo-800 text-sm font-semibold rounded-lg shadow-sm">
+                  ⏱ Total Projects: {timeTrackingData.length}
+                </div>
+              </div>
+
+              {loading ? (
+                <p className="text-gray-500 text-center py-6 animate-pulse">
+                  Loading time tracking data...
+                </p>
+              ) : timeTrackingData.length === 0 ? (
+                <p className="text-gray-400 text-center py-6">
+                  No time tracking data found.
+                </p>
+              ) : (
+                <div className="space-y-10">
+                  {timeTrackingData.map((project) => (
+                    <div
+                      key={project.projectId}
+                      className="bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 p-6"
+                    >
+                      {/* Project Header */}
+                      <div className="flex flex-wrap justify-between items-center mb-4">
+                        <div>
+                          <h3 className="text-lg font-bold text-indigo-800">
+                            {project.projectName}
+                          </h3>
+                          <p className="text-sm text-gray-500 mt-0.5">
+                            Client: {project.client}
+                          </p>
+                        </div>
+                        <span className="text-sm font-semibold bg-indigo-600 text-white px-4 py-1.5 rounded-full shadow">
+                          Total Hours:{" "}
+                          {(project.totalProjectHours / 3600).toFixed(2)} hrs
+                        </span>
+                      </div>
+
+                      {/* Employee Table */}
+                      <div className="overflow-x-auto rounded-lg border border-gray-100">
+                        <table className="min-w-full text-sm">
+                          <thead className="bg-indigo-100 text-indigo-900">
+                            <tr>
+                              <th className="text-left px-4 py-2 font-semibold">
+                                Employee
+                              </th>
+                              <th className="text-left px-4 py-2 font-semibold">
+                                Email
+                              </th>
+                              <th className="text-right px-4 py-2 font-semibold">
+                                Hours Worked
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {project.employees.map((emp, index) => (
+                              <tr
+                                key={emp.employeeId}
+                                className={`${
+                                  index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                                } hover:bg-indigo-50 transition`}
+                              >
+                                <td className="px-4 py-2 font-medium text-gray-800">
+                                  {emp.name}
+                                </td>
+                                <td className="px-4 py-2 text-gray-500">
+                                  {emp.email}
+                                </td>
+                                <td className="px-4 py-2 text-right font-semibold text-indigo-700">
+                                  {(emp.totalHours / 3600).toFixed(2)} hrs
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -733,7 +844,6 @@ export default function ProjectManagement() {
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl border border-gray-100">
-            {/* Header */}
             <div className="flex justify-between items-center mb-4">
               <div>
                 <h2 className="text-xl font-bold text-indigo-900">
@@ -751,16 +861,12 @@ export default function ProjectManagement() {
               </button>
             </div>
 
-            {/* Form */}
             <div className="space-y-5">
-              {/* Project Selection */}
-              {/* Project Selection */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
                   Project <span className="text-red-500">*</span>
                 </label>
 
-                {/* Selected Project Badge */}
                 {newTask.project && (
                   <div className="flex items-center gap-2 mb-2">
                     {(() => {
@@ -784,7 +890,6 @@ export default function ProjectManagement() {
                   </div>
                 )}
 
-                {/* Dropdown (only show if no project selected) */}
                 {!newTask.project && (
                   <select
                     onChange={(e) => {
@@ -806,7 +911,6 @@ export default function ProjectManagement() {
                 )}
               </div>
 
-              {/* Title */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
                   Task Title <span className="text-red-500">*</span>
@@ -821,7 +925,6 @@ export default function ProjectManagement() {
                   }
                 />
               </div>
-              {/* Status */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
                   Status
@@ -840,7 +943,6 @@ export default function ProjectManagement() {
                 </select>
               </div>
 
-              {/* Description */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
                   Description
@@ -856,13 +958,11 @@ export default function ProjectManagement() {
                 />
               </div>
 
-              {/* Assignees */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
                   Assign Employees
                 </label>
 
-                {/* Selected badges */}
                 <div className="flex flex-wrap gap-2 mb-2">
                   {newTask.assignees.map((empId) => {
                     const emp = employees.find((e) => e._id === empId);
@@ -895,7 +995,6 @@ export default function ProjectManagement() {
                   })}
                 </div>
 
-                {/* Dropdown */}
                 <select
                   onChange={(e) => {
                     const empId = e.target.value;
@@ -918,7 +1017,6 @@ export default function ProjectManagement() {
                 </select>
               </div>
 
-              {/* Priority */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
                   Priority
@@ -936,7 +1034,6 @@ export default function ProjectManagement() {
                 </select>
               </div>
 
-              {/* Submit */}
               <button
                 onClick={handleCreateTask}
                 className={`w-full bg-${primaryBlue} hover:bg-${primaryBlueHover} text-white py-3 rounded-xl font-semibold shadow-md transition`}
@@ -952,7 +1049,6 @@ export default function ProjectManagement() {
           isTeamDrawerOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        {/* Header */}
         <div className="flex justify-between items-center border-b border-gray-100 px-6 py-5 bg-indigo-50">
           <h2 className="text-xl font-bold text-indigo-900">Add Team Member</h2>
           <FiX
@@ -962,14 +1058,12 @@ export default function ProjectManagement() {
           />
         </div>
 
-        {/* Form Body */}
         <div className="p-6">
           <form
             onSubmit={handleAddTeamMember}
             className="space-y-5"
             encType="multipart/form-data"
           >
-            {/* Full Name */}
             <div>
               <label className="block text-sm font-semibold text-indigo-900 mb-1">
                 Full Name <span className="text-red-500">*</span>
@@ -985,7 +1079,6 @@ export default function ProjectManagement() {
               />
             </div>
 
-            {/* Email */}
             <div>
               <label className="block text-sm font-semibold text-indigo-900 mb-1">
                 Email <span className="text-red-500">*</span>
@@ -1001,7 +1094,6 @@ export default function ProjectManagement() {
               />
             </div>
 
-            {/* Phone + Date of Birth */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-indigo-900 mb-1">
@@ -1031,7 +1123,6 @@ export default function ProjectManagement() {
               </div>
             </div>
 
-            {/* Department */}
             <div>
               <label className="block text-sm font-semibold text-indigo-900 mb-1">
                 Department
@@ -1065,7 +1156,6 @@ export default function ProjectManagement() {
               </select>
             </div>
 
-            {/* Role + Joining Date */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-indigo-900 mb-1">
@@ -1094,7 +1184,6 @@ export default function ProjectManagement() {
               </div>
             </div>
 
-            {/* Salary */}
             <div>
               <label className="block text-sm font-semibold text-indigo-900 mb-1">
                 Salary (Monthly)
@@ -1109,7 +1198,6 @@ export default function ProjectManagement() {
               />
             </div>
 
-            {/* Avatar Upload */}
             <div>
               <label className="block text-sm font-semibold text-indigo-900 mb-1">
                 Profile Picture
@@ -1127,7 +1215,6 @@ export default function ProjectManagement() {
               />
             </div>
 
-            {/* Documents Upload */}
             <div>
               <label className="block text-sm font-semibold text-indigo-900 mb-1">
                 Upload Documents (Multiple)
@@ -1191,7 +1278,6 @@ export default function ProjectManagement() {
               )}
             </div>
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={teamLoading}
