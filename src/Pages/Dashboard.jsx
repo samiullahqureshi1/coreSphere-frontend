@@ -25,7 +25,7 @@ import {
   ResponsiveContainer,
   Cell,
   Line, // Import Cell for custom Pie chart colors
-  LineChart
+  LineChart,
 } from "recharts";
 import { FaTasks, FaProjectDiagram, FaStar } from "react-icons/fa";
 import { BsCalendarCheck } from "react-icons/bs";
@@ -48,13 +48,13 @@ export default function Dashboard() {
     },
   ]);
   const employeePerformanceData = [
-  { month: "Jan", score: 70 },
-  { month: "Feb", score: 75 },
-  { month: "Mar", score: 80 },
-  { month: "Apr", score: 85 },
-  { month: "May", score: 90 },
-  { month: "Jun", score: 88 },
-];
+    { month: "Jan", score: 70 },
+    { month: "Feb", score: 75 },
+    { month: "Mar", score: 80 },
+    { month: "Apr", score: 85 },
+    { month: "May", score: 90 },
+    { month: "Jun", score: 88 },
+  ];
 
   const [checkedIn, setCheckedIn] = useState(false);
   const [attendanceStatus, setAttendanceStatus] = useState(null);
@@ -70,7 +70,7 @@ export default function Dashboard() {
       }
     );
     const data = await res.json();
-    setAttendanceStatus(data.status); 
+    setAttendanceStatus(data.status);
   };
   useEffect(() => {
     fetchAttendanceStatus();
@@ -220,24 +220,76 @@ export default function Dashboard() {
         icon: <FiCheckCircle className="text-emerald-500" size={20} />,
       },
     ],
- employee: [
-    { title: "Tasks Completed", value: 42, icon: <FaTasks className="text-blue-600 text-xl" /> },
-    { title: "Attendance", value: "95%", icon: <BsCalendarCheck className="text-green-600 text-xl" /> },
-    { title: "Projects", value: 3, icon: <FaProjectDiagram className="text-purple-600 text-xl" /> },
-    { title: "Performance Score", value: "88%", icon: <FaStar className="text-yellow-500 text-xl" /> },
-  ],
+    employee: [
+      {
+        title: "Tasks Completed",
+        value: 42,
+        icon: <FaTasks className="text-blue-600 text-xl" />,
+      },
+      {
+        title: "Attendance",
+        value: "95%",
+        icon: <BsCalendarCheck className="text-green-600 text-xl" />,
+      },
+      {
+        title: "Projects",
+        value: 3,
+        icon: <FaProjectDiagram className="text-purple-600 text-xl" />,
+      },
+      {
+        title: "Performance Score",
+        value: "88%",
+        icon: <FaStar className="text-yellow-500 text-xl" />,
+      },
+    ],
   };
-const recentTasks = [
-  { id: 1, title: "UI Design Update", project: "Website Revamp", status: "Completed", deadline: "Oct 12" },
-  { id: 2, title: "Client Report", project: "Q3 Insights", status: "In Progress", deadline: "Oct 18" },
-  { id: 3, title: "Bug Fixes", project: "CRM App", status: "Pending", deadline: "Oct 20" },
-];
+  const recentTasks = [
+    {
+      id: 1,
+      title: "UI Design Update",
+      project: "Website Revamp",
+      status: "Completed",
+      deadline: "Oct 12",
+    },
+    {
+      id: 2,
+      title: "Client Report",
+      project: "Q3 Insights",
+      status: "In Progress",
+      deadline: "Oct 18",
+    },
+    {
+      id: 3,
+      title: "Bug Fixes",
+      project: "CRM App",
+      status: "Pending",
+      deadline: "Oct 20",
+    },
+  ];
 
-const upcomingMeetings = [
-  { id: 1, title: "Team Standup", date: "Oct 16", time: "10:00 AM", location: "Zoom" },
-  { id: 2, title: "Client Review", date: "Oct 18", time: "3:00 PM", location: "Meeting Room 2" },
-  { id: 3, title: "HR Check-in", date: "Oct 20", time: "11:30 AM", location: "Google Meet" },
-];
+  const upcomingMeetings = [
+    {
+      id: 1,
+      title: "Team Standup",
+      date: "Oct 16",
+      time: "10:00 AM",
+      location: "Zoom",
+    },
+    {
+      id: 2,
+      title: "Client Review",
+      date: "Oct 18",
+      time: "3:00 PM",
+      location: "Meeting Room 2",
+    },
+    {
+      id: 3,
+      title: "HR Check-in",
+      date: "Oct 20",
+      time: "11:30 AM",
+      location: "Google Meet",
+    },
+  ];
   return (
     <div className={`flex h-screen ${lightBg} overflow-hidden`}>
       <Sidebar />
@@ -527,107 +579,84 @@ const upcomingMeetings = [
           )}
 
           {/* ===== EMPLOYEE VIEW (Refined) ===== */}
-       {role === "employee" && (
-  <div className="space-y-6">
-     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-      <h3 className={`text-xl font-bold mb-4 ${darkTextColor}`}>
-        Attendance Summary
-      </h3>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-        <div>
-          <p className="text-gray-500 font-semibold">Total Working Days</p>
-          <p className="text-3xl font-bold text-blue-600">22</p>
-        </div>
-        <div>
-          <p className="text-gray-500 font-semibold">Days Present</p>
-          <p className="text-3xl font-bold text-green-600">20</p>
-        </div>
-        <div>
-          <p className="text-gray-500 font-semibold">Leaves</p>
-          <p className="text-3xl font-bold text-red-600">2</p>
-        </div>
-      </div>
-    </div>
-    {/* 🔹 Employee Stats Cards */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      {stats?.employee?.map((item) => (
-        <div
-          key={item.title}
-          className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition border-t-4 border-blue-500"
-        >
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="text-gray-600 text-sm font-semibold uppercase tracking-wider">
-              {item.title}
-            </h3>
-            <span className="p-2 bg-blue-100 rounded-full">{item.icon}</span>
-          </div>
-          <p className={`text-3xl font-extrabold ${darkTextColor}`}>
-            {item.value}
-          </p>
-        </div>
-      ))}
-    </div>
+          {role === "employee" && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                <h3 className={`text-xl font-bold mb-4 ${darkTextColor}`}>
+                  Attendance Summary
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+                  <div>
+                    <p className="text-gray-500 font-semibold">
+                      Total Working Days
+                    </p>
+                    <p className="text-3xl font-bold text-blue-600">22</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 font-semibold">Days Present</p>
+                    <p className="text-3xl font-bold text-green-600">20</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 font-semibold">Leaves</p>
+                    <p className="text-3xl font-bold text-red-600">2</p>
+                  </div>
+                </div>
+              </div>
+              {/* 🔹 Employee Stats Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {stats?.employee?.map((item) => (
+                  <div
+                    key={item.title}
+                    className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition border-t-4 border-blue-500"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-gray-600 text-sm font-semibold uppercase tracking-wider">
+                        {item.title}
+                      </h3>
+                      <span className="p-2 bg-blue-100 rounded-full">
+                        {item.icon}
+                      </span>
+                    </div>
+                    <p className={`text-3xl font-extrabold ${darkTextColor}`}>
+                      {item.value}
+                    </p>
+                  </div>
+                ))}
+              </div>
 
-    {/* 🔹 Performance Progress Chart */}
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-      <h3 className={`text-xl font-bold mb-4 ${darkTextColor}`}>
-        Your Performance Progress
-      </h3>
-      <ResponsiveContainer width="100%" height={350}>
-        <LineChart data={employeePerformanceData}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-          <XAxis dataKey="month" stroke="#6b7280" />
-          <YAxis stroke="#6b7280" />
-          <Tooltip
-            contentStyle={{
-              backgroundColor: "#1e3a8a",
-              border: "none",
-              borderRadius: "8px",
-            }}
-            labelStyle={{ color: "#fff" }}
-          />
-          <Line
-            type="monotone"
-            dataKey="score"
-            stroke="#3b82f6"
-            strokeWidth={3}
-            dot={{ r: 5, fill: "#3b82f6" }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-
-    
-
-    {/* 🔹 Attendance Summary */}
-   
-
-    {/* 🔹 Upcoming Meetings */}
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-      <h3 className={`text-xl font-bold mb-4 ${darkTextColor}`}>
-        Upcoming Meetings
-      </h3>
-      <ul className="divide-y">
-        {upcomingMeetings.map((meeting) => (
-          <li key={meeting.id} className="py-3 flex justify-between items-center">
-            <div>
-              <p className="font-semibold text-gray-700">{meeting.title}</p>
-              <p className="text-gray-500 text-sm">
-                {meeting.date} • {meeting.time}
-              </p>
+              {/* 🔹 Performance Progress Chart */}
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                <h3 className={`text-xl font-bold mb-4 ${darkTextColor}`}>
+                  Your Performance Progress
+                </h3>
+                <ResponsiveContainer width="100%" height={350}>
+                  <LineChart data={employeePerformanceData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="month" stroke="#6b7280" />
+                    <YAxis stroke="#6b7280" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "#1e3a8a",
+                        border: "none",
+                        borderRadius: "8px",
+                      }}
+                      labelStyle={{ color: "#fff" }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="score"
+                      stroke="#3b82f6"
+                      strokeWidth={3}
+                      dot={{ r: 5, fill: "#3b82f6" }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-            <span className="text-blue-500 font-semibold">{meeting.location}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  </div>
-)}
-
+          )}
         </main>
       </div>
 
-      {/* ===== LEAVE FORM MODAL (Updated) ===== */}
       {showLeaveForm && (
         <div className="fixed inset-0 bg-indigo-900 bg-opacity-70 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl relative transform transition-all duration-300 scale-100 opacity-100">

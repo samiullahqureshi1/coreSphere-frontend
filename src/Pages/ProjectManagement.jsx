@@ -73,7 +73,7 @@ export default function ProjectManagement() {
 
       if (data.success) {
         setProjects((prev) => [...prev, data.project]);
-        alert("✅ Project added successfully!");
+        alert(" Project added successfully!");
         setIsDrawerOpen(false);
         setFormData({
           name: "",
@@ -173,19 +173,16 @@ export default function ProjectManagement() {
       formData.append("joiningDate", teamForm.joiningDate || "");
       formData.append("salary", teamForm.salary || "");
 
-      // Avatar (single file)
       if (teamForm.avatar) {
         formData.append("avatar", teamForm.avatar);
       }
 
-      // Documents (multiple files)
       if (teamForm.documents && teamForm.documents.length > 0) {
         teamForm.documents.forEach((file) => {
           formData.append("documents", file);
         });
       }
 
-      // Send request
       const res = await fetch("https://core-sphere-backend.vercel.app/Employee/addEmployee", {
         method: "POST",
         body: formData,
@@ -195,7 +192,7 @@ export default function ProjectManagement() {
 
       if (data.success) {
         setEmployees((prev) => [...prev, data.employee]);
-        alert("✅ Team member added successfully!");
+        alert(" Team member added successfully!");
         setTeamForm({
           name: "",
           email: "",
@@ -268,9 +265,9 @@ export default function ProjectManagement() {
           title: newTask.title,
           description: newTask.description,
           priority: newTask.priority,
-          status: newTask.status, // default same as backend
+          status: newTask.status, 
           assignees: newTask.assignees,
-          projectId: newTask.project, // 👈 important change here
+          projectId: newTask.project, 
         }),
       });
 
@@ -288,7 +285,7 @@ export default function ProjectManagement() {
           description: "",
           assignees: [],
           priority: "Medium",
-          project: "", // reset selected project too
+          project: "", 
         });
       } else {
         alert(data.message);

@@ -14,6 +14,10 @@ import LandingPage from "./component/LandingPage";
 import Login from "./AuthForms";
 import Signup from "./AuthSignUp";
 import ProjectManagement from "./Pages/ProjectManagement";
+import AnnouncementPage from "./Pages/AnnouncementPage";
+import EmployeeAttendance from "./Pages/EmployeeAttendance";
+import EmployeePayroll from "./Pages/EmployeePayroll";
+import EmployeeLeaveManagement from "./Pages/EmployeeLeaveManagement";
 
 const App = () => {
   return (
@@ -26,6 +30,11 @@ const App = () => {
         <Route path="/projects" element={<ProjectManagement />} />
         <Route path="/human-resources" element={<HumanResources />} />
         <Route path="/crm" element={<CRM />} />
+        <Route path="/employee/tasks" element={<TaskBoard />} />
+        <Route path="/employee/announcements" element={<AnnouncementPage />} />
+        <Route path="/employee/attendance" element={<EmployeeAttendance />} />
+        <Route path="/employee/payroll" element={<EmployeePayroll />} />
+        <Route path="/employee/leave-management" element={<EmployeeLeaveManagement />} />
 
         <Route path="/home" element={<Navigate to="/dashboard" />} />
         <Route path="/signup" element={<Signup />} />

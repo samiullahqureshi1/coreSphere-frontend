@@ -12,8 +12,10 @@ import {
   FiX,
   FiPhone,
   FiMail,
+  FiTrash2,
 } from "react-icons/fi";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
 export default function HumanResources() {
   const [activeTab, setActiveTab] = useState("employees");
@@ -32,6 +34,78 @@ export default function HumanResources() {
   const [payrolls, setPayrolls] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
+  const [announcements, setAnnouncements] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [newAnnouncement, setNewAnnouncement] = useState({
+    title: "",
+    content: "",
+  });
+const token = localStorage.getItem("token");
+const decoded = token ? jwtDecode(token) : null;
+const authorId = decoded?._id;
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      try {
+        const res = await fetch("https://core-sphere-backend.vercel.app/api/announcement/get");
+        const data = await res.json();
+        if (data.success) setAnnouncements(data.announcements.reverse());
+      } catch (err) {
+        console.error("Error fetching announcements:", err);
+      }
+    };
+    fetchAnnouncements();
+  }, []);
+
+  const handleCreateAnnouncement = async () => {
+  if (!newAnnouncement.title.trim() || !newAnnouncement.content.trim()) {
+    return alert("Please fill in all fields.");
+  }
+
+  try {
+    const payload = {
+      title: newAnnouncement.title,
+      content: newAnnouncement.content,
+      author: authorId, // ✅ added author here
+    };
+
+    const res = await fetch("https://core-sphere-backend.vercel.app/api/announcement/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      setAnnouncements((prev) => [data.announcement, ...prev]);
+      setShowModal(false);
+      setNewAnnouncement({ title: "", content: "" });
+    } else {
+      alert(data.message);
+    }
+  } catch (error) {
+    console.error("Error creating announcement:", error);
+    alert("Failed to create announcement.");
+  }
+};
+
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this announcement?"))
+      return;
+    try {
+      const res = await fetch(
+        `https://core-sphere-backend.vercel.app/api/announcement/delete/${id}`,
+        { method: "DELETE" }
+      );
+      const data = await res.json();
+      if (data.success) {
+        setAnnouncements((prev) => prev.filter((a) => a._id !== id));
+      }
+    } catch (error) {
+      console.error("Error deleting announcement:", error);
+    }
+  };
 
   const handleViewEmployee = async (id) => {
     try {
@@ -122,9 +196,7 @@ export default function HumanResources() {
   useEffect(() => {
     const fetchLeaves = async () => {
       try {
-        const res = await fetch(
-          "https://core-sphere-backend.vercel.app/Leave/getLeaves"
-        );
+        const res = await fetch("https://core-sphere-backend.vercel.app/Leave/getLeaves");
         const data = await res.json();
         if (data.success) {
           setLeaves(data.leaves);
@@ -142,9 +214,7 @@ export default function HumanResources() {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const res = await fetch(
-          "https://core-sphere-backend.vercel.app/Employee/getEmployee"
-        );
+        const res = await fetch("https://core-sphere-backend.vercel.app/Employee/getEmployee");
         const data = await res.json();
         if (data.success) setEmployees(data.employees);
       } catch (err) {
@@ -190,13 +260,10 @@ export default function HumanResources() {
         }
       }
 
-      const res = await fetch(
-        "https://core-sphere-backend.vercel.app/Employee/addEmployee",
-        {
-          method: "POST",
-          body: form,
-        }
-      );
+      const res = await fetch("https://core-sphere-backend.vercel.app/Employee/addEmployee", {
+        method: "POST",
+        body: form,
+      });
 
       const data = await res.json();
 
@@ -322,6 +389,8 @@ export default function HumanResources() {
               { key: "leave", label: "Leave Management", icon: <FiCalendar /> },
               { key: "attendance", label: "Attendance", icon: <FiClock /> },
               { key: "payroll", label: "Payroll", icon: <FiDollarSign /> },
+              { key: "announcements", label: "Announcement", icon: <FiStar /> },
+
               {
                 key: "recruitment",
                 label: "Recruitment",
@@ -910,8 +979,209 @@ export default function HumanResources() {
               ))}
             </div>
           )}
+          {activeTab === "announcements" && (
+            <main className="flex-1 p-6 overflow-y-auto">
+              {/* === Header Row with Add Button === */}
+              <div className="flex justify-between items-center mb-6">
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg font-semibold shadow-md transition"
+                >
+                  <FiPlus size={18} />
+                  Add Announcement
+                </button>
+              </div>
+
+              {/* === Announcement Cards === */}
+              {announcements.length === 0 ? (
+                <div className="text-center text-gray-400 mt-20">
+                  <p className="text-lg">No announcements yet.</p>
+                </div>
+              ) : (
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {announcements.map((a) => (
+                    <div
+                      key={a._id}
+                      className="bg-white border border-gray-200 rounded-2xl shadow-md hover:shadow-lg transition-all p-5 relative group"
+                    >
+                      {/* Delete Button */}
+                      <FiTrash2
+                        onClick={() => handleDelete(a._id)}
+                        className="absolute top-3 right-3 text-gray-400 hover:text-red-500 cursor-pointer transition"
+                        size={18}
+                      />
+
+                      <h2 className="text-xl font-bold text-indigo-900 mb-2 group-hover:text-sky-700 transition">
+                        {a.title}
+                      </h2>
+                      <p className="text-gray-600 mb-4 text-sm leading-relaxed">
+                        {a.content.length > 150
+                          ? a.content.slice(0, 150) + "..."
+                          : a.content}
+                      </p>
+
+                      <div className="flex items-center justify-between text-xs text-gray-400 border-t pt-2">
+                        <span className="flex items-center gap-1">
+                          <FiCalendar />
+                          {new Date(a.createdAt).toLocaleDateString("en-GB")}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <FiUser /> {a.author?.name || "Admin"}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* === Add Announcement Modal === */}
+              {showModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                  <div className="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl border border-gray-100">
+                    <div className="flex justify-between items-center mb-4">
+                      <h2 className="text-xl font-bold text-indigo-900">
+                        Add New Announcement
+                      </h2>
+                      <button
+                        onClick={() => setShowModal(false)}
+                        className="text-gray-500 hover:text-red-500 transition"
+                      >
+                        ✖
+                      </button>
+                    </div>
+
+                    <div className="space-y-5">
+                      {/* Title */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">
+                          Title
+                        </label>
+                        <input
+                          type="text"
+                          value={newAnnouncement.title}
+                          onChange={(e) =>
+                            setNewAnnouncement({
+                              ...newAnnouncement,
+                              title: e.target.value,
+                            })
+                          }
+                          className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-sky-500 outline-none"
+                          placeholder="Enter announcement title"
+                        />
+                      </div>
+
+                      {/* Content */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">
+                          Content
+                        </label>
+                        <textarea
+                          rows={4}
+                          value={newAnnouncement.content}
+                          onChange={(e) =>
+                            setNewAnnouncement({
+                              ...newAnnouncement,
+                              content: e.target.value,
+                            })
+                          }
+                          className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-sky-500 outline-none resize-none"
+                          placeholder="Write your announcement here..."
+                        ></textarea>
+                      </div>
+
+                      <div className="flex justify-end gap-3 mt-4">
+                        <button
+                          onClick={() => setShowModal(false)}
+                          className="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleCreateAnnouncement}
+                          className="px-4 py-2 rounded-lg bg-sky-600 text-white font-semibold hover:bg-sky-700 transition"
+                        >
+                          Publish
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </main>
+          )}
         </main>
       </div>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl border border-gray-100">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-indigo-900">
+                Add New Announcement
+              </h2>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-gray-500 hover:text-red-500 transition"
+              >
+                ✖
+              </button>
+            </div>
+
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  value={newAnnouncement.title}
+                  onChange={(e) =>
+                    setNewAnnouncement({
+                      ...newAnnouncement,
+                      title: e.target.value,
+                    })
+                  }
+                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-sky-500 outline-none"
+                  placeholder="Enter announcement title"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Content
+                </label>
+                <textarea
+                  rows={4}
+                  value={newAnnouncement.content}
+                  onChange={(e) =>
+                    setNewAnnouncement({
+                      ...newAnnouncement,
+                      content: e.target.value,
+                    })
+                  }
+                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-sky-500 outline-none resize-none"
+                  placeholder="Write your announcement here..."
+                ></textarea>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-4">
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreateAnnouncement}
+                  className="px-4 py-2 rounded-lg bg-sky-600 text-white font-semibold hover:bg-sky-700 transition"
+                >
+                  Publish
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div
         className={`fixed top-0 right-0 h-full w-[420px] bg-white shadow-2xl rounded-l-2xl transform transition-transform duration-300 z-50 overflow-y-auto ${

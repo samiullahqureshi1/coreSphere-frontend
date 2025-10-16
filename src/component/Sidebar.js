@@ -387,9 +387,9 @@ export default function Sidebar() {
       access: ["employee"],
     },
     {
-      name: "Time Tracking",
+      name: "Leave Management",
       icon: <Clock size={18} />,
-      path: "/employee/time-tracking",
+      path: "/employee/leave-management",
       access: ["employee"],
     },
     {
