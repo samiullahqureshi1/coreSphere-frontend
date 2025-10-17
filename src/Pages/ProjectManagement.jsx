@@ -30,6 +30,32 @@ export default function ProjectManagement() {
     status: "",
     description: "",
   });
+const [reportsData, setReportsData] = useState(null);
+const [reportsLoading, setReportsLoading] = useState(false);
+
+useEffect(() => {
+  const fetchReports = async () => {
+    try {
+      setReportsLoading(true);
+      const res = await fetch("http://localhost:5000/Employee/reports/overview");
+      const data = await res.json();
+
+      if (data.success) {
+        setReportsData(data.summary);
+      } else {
+        console.error("Failed to fetch reports:", data.message);
+      }
+    } catch (err) {
+      console.error("Error fetching reports:", err);
+    } finally {
+      setReportsLoading(false);
+    }
+  };
+
+  if (activeTab === "reports") {
+    fetchReports();
+  }
+}, [activeTab]);
 
   const primaryBlue = "sky-600";
   const primaryBlueHover = "sky-700";
@@ -39,7 +65,9 @@ export default function ProjectManagement() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const res = await fetch("https://core-sphere-backend.vercel.app/Project/getProjects");
+        const res = await fetch(
+          "http://localhost:5000/Project/getProjects"
+        );
         const data = await res.json();
         if (data.success) {
           setProjects(data.projects);
@@ -58,7 +86,7 @@ export default function ProjectManagement() {
       try {
         setLoading(true);
         const res = await fetch(
-          "https://core-sphere-backend.vercel.app/api/task/time-tracking-summary"
+          "http://localhost:5000/api/task/time-tracking-summary"
         );
         const data = await res.json();
 
@@ -89,11 +117,14 @@ export default function ProjectManagement() {
 
     setLoading(true);
     try {
-      const res = await fetch("https://core-sphere-backend.vercel.app/Project/addProject", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const res = await fetch(
+        "http://localhost:5000/Project/addProject",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const data = await res.json();
 
@@ -125,7 +156,7 @@ export default function ProjectManagement() {
       return;
     try {
       const res = await fetch(
-        `https://core-sphere-backend.vercel.app/Project/deleteProject/${id}`,
+        `http://localhost:5000/Project/deleteProject/${id}`,
         {
           method: "DELETE",
         }
@@ -146,7 +177,9 @@ export default function ProjectManagement() {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const res = await fetch("https://core-sphere-backend.vercel.app/Employee/getEmployee");
+        const res = await fetch(
+          "http://localhost:5000/Employee/getEmployee"
+        );
         const data = await res.json();
         if (data.success) {
           setEmployees(data.employees);
@@ -209,10 +242,13 @@ export default function ProjectManagement() {
         });
       }
 
-      const res = await fetch("https://core-sphere-backend.vercel.app/Employee/addEmployee", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch(
+        "http://localhost:5000/Employee/addEmployee",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       const data = await res.json();
 
@@ -284,18 +320,21 @@ export default function ProjectManagement() {
     if (!newTask.title.trim()) return alert("Please enter a task title.");
 
     try {
-      const res = await fetch("https://core-sphere-backend.vercel.app/api/task/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: newTask.title,
-          description: newTask.description,
-          priority: newTask.priority,
-          status: newTask.status,
-          assignees: newTask.assignees,
-          projectId: newTask.project,
-        }),
-      });
+      const res = await fetch(
+        "http://localhost:5000/api/task/add",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: newTask.title,
+            description: newTask.description,
+            priority: newTask.priority,
+            status: newTask.status,
+            assignees: newTask.assignees,
+            projectId: newTask.project,
+          }),
+        }
+      );
 
       const data = await res.json();
 
@@ -420,14 +459,13 @@ export default function ProjectManagement() {
                           <td className="p-3 font-semibold text-gray-800">
                             <div>
                               <p className="truncate">{p.name}</p>
-                             {p.description && (
-  <p className="text-xs text-gray-500 mt-1">
-    {p.description.length > 50 
-      ? p.description.slice(0, 50) + "..." 
-      : p.description}
-  </p>
-)}
-
+                              {p.description && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                  {p.description.length > 50
+                                    ? p.description.slice(0, 50) + "..."
+                                    : p.description}
+                                </p>
+                              )}
                             </div>
                           </td>
 
@@ -686,15 +724,202 @@ export default function ProjectManagement() {
           )}
 
           {activeTab === "reports" && (
-            <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
-              <h2 className="text-xl font-bold text-indigo-900 mb-3">
-                Reports & Analytics
-              </h2>
-              <p className="text-gray-500 text-sm">
-                Generate insights on performance, timelines, and budgets.
-              </p>
+  <div className="bg-white p-8 rounded-2xl shadow-md border border-gray-100">
+    <div className="flex justify-between items-center mb-6">
+      <div>
+        <h2 className="text-2xl font-bold text-indigo-900">
+          Reports & Analytics
+        </h2>
+        <p className="text-gray-500 text-sm">
+          Insights on projects, tasks, time, and team performance.
+        </p>
+      </div>
+      <div className="px-4 py-2 bg-indigo-100 text-indigo-800 text-sm font-semibold rounded-lg shadow-sm">
+        Generated: {new Date().toLocaleDateString()}
+      </div>
+    </div>
+
+    {reportsLoading ? (
+      <p className="text-gray-500 text-center py-8 animate-pulse">
+        Loading reports...
+      </p>
+    ) : !reportsData ? (
+      <p className="text-gray-400 text-center py-8">
+        No report data available.
+      </p>
+    ) : (
+      <>
+        {/* Summary Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+          <div className="bg-indigo-50 rounded-xl p-4 text-center shadow">
+            <p className="text-sm text-gray-600">Total Projects</p>
+            <p className="text-2xl font-bold text-indigo-800">
+              {reportsData.projects.total}
+            </p>
+          </div>
+          <div className="bg-emerald-50 rounded-xl p-4 text-center shadow">
+            <p className="text-sm text-gray-600">Completed Tasks</p>
+            <p className="text-2xl font-bold text-emerald-800">
+              {reportsData.tasks.done}
+            </p>
+          </div>
+          <div className="bg-sky-50 rounded-xl p-4 text-center shadow">
+            <p className="text-sm text-gray-600">Active Employees</p>
+            <p className="text-2xl font-bold text-sky-800">
+              {reportsData.employees.active}
+            </p>
+          </div>
+          <div className="bg-yellow-50 rounded-xl p-4 text-center shadow">
+            <p className="text-sm text-gray-600">Attendance Rate</p>
+            <p className="text-2xl font-bold text-yellow-800">
+              {reportsData.attendance.attendanceRate}%
+            </p>
+          </div>
+          <div className="bg-purple-50 rounded-xl p-4 text-center shadow">
+            <p className="text-sm text-gray-600">Avg Progress</p>
+            <p className="text-2xl font-bold text-purple-800">
+              {reportsData.projects.avgProgress}%
+            </p>
+          </div>
+          <div className="bg-pink-50 rounded-xl p-4 text-center shadow">
+            <p className="text-sm text-gray-600">Total Budget</p>
+            <p className="text-2xl font-bold text-pink-800">
+              ${reportsData.projects.totalBudget.toLocaleString()}
+            </p>
+          </div>
+        </div>
+
+        {/* Project Task Stats */}
+        <div className="mt-10">
+          <h3 className="text-lg font-bold text-indigo-900 mb-3">
+            Project Task Breakdown
+          </h3>
+
+          {reportsData.projectTaskStats.length === 0 ? (
+            <p className="text-gray-500 text-center py-6">
+              No project task data found.
+            </p>
+          ) : (
+            <div className="space-y-8">
+              {reportsData.projectTaskStats.map((proj) => (
+                <div
+                  key={proj.projectId}
+                  className="border border-gray-100 rounded-xl shadow-sm hover:shadow-lg transition duration-200 p-6"
+                >
+                  <div className="flex justify-between items-center mb-3">
+                    <div>
+                      <h4 className="text-lg font-semibold text-indigo-800">
+                        {proj.projectName}
+                      </h4>
+                      <p className="text-sm text-gray-500">
+                        Status: {proj.status}
+                      </p>
+                    </div>
+                    <div className="bg-sky-100 text-sky-800 px-3 py-1 rounded-full text-sm font-semibold">
+                      Total Time: {proj.totalTimeSpent} hrs
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 text-sm mb-4">
+                    <p>
+                      <span className="font-semibold">Total Tasks:</span>{" "}
+                      {proj.totalTasks}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Completed:</span>{" "}
+                      {proj.completedTasks}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Pending:</span>{" "}
+                      {proj.pendingTasks}
+                    </p>
+                  </div>
+
+                  {/* Task Details */}
+                  {proj.tasks.length > 0 && (
+                    <div className="overflow-x-auto border rounded-lg">
+                      <table className="min-w-full text-sm">
+                        <thead className="bg-indigo-100 text-indigo-900">
+                          <tr>
+                            <th className="px-4 py-2 text-left font-semibold">
+                              Task
+                            </th>
+                            <th className="px-4 py-2 text-center font-semibold">
+                              Status
+                            </th>
+                            <th className="px-4 py-2 text-center font-semibold">
+                              Total Hours
+                            </th>
+                            <th className="px-4 py-2 text-left font-semibold">
+                              Assignees
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {proj.tasks.map((task) => (
+                            <tr
+                              key={task.taskId}
+                              className="border-t hover:bg-gray-50 transition"
+                            >
+                              <td className="px-4 py-2 text-gray-800">
+                                {task.title}
+                              </td>
+                              <td className="px-4 py-2 text-center">
+                                <span
+                                  className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                    task.status === "done"
+                                      ? "bg-emerald-100 text-emerald-700"
+                                      : task.status === "inprogress"
+                                      ? "bg-sky-100 text-sky-700"
+                                      : "bg-yellow-100 text-yellow-700"
+                                  }`}
+                                >
+                                  {task.status}
+                                </span>
+                              </td>
+                              <td className="px-4 py-2 text-center text-indigo-800 font-semibold">
+                                {task.totalTimeSpent} hrs
+                              </td>
+                              <td className="px-4 py-2">
+                                <div className="flex flex-wrap gap-2">
+                                  {task.assignees.map((a) => (
+                                    <div
+                                      key={a.employeeId}
+                                      className="flex items-center gap-1 bg-sky-50 text-sky-800 px-2 py-1 rounded-full text-xs"
+                                    >
+                                      <img
+                                        src={
+                                          a.avatar ||
+                                          `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                            a.name
+                                          )}&background=random`
+                                        }
+                                        alt={a.name}
+                                        className="w-4 h-4 rounded-full border border-white"
+                                      />
+                                      <span>
+                                        {a.name} ({a.timeSpent} hrs)
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           )}
+        </div>
+      </>
+    )}
+  </div>
+)}
+
         </main>
       </div>
 

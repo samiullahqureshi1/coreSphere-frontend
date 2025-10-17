@@ -46,7 +46,7 @@ const authorId = decoded?._id;
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
-        const res = await fetch("https://core-sphere-backend.vercel.app/api/announcement/get");
+        const res = await fetch("http://localhost:5000/api/announcement/get");
         const data = await res.json();
         if (data.success) setAnnouncements(data.announcements.reverse());
       } catch (err) {
@@ -68,7 +68,7 @@ const authorId = decoded?._id;
       author: authorId, // ✅ added author here
     };
 
-    const res = await fetch("https://core-sphere-backend.vercel.app/api/announcement/add", {
+    const res = await fetch("http://localhost:5000/api/announcement/add", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -90,12 +90,45 @@ const authorId = decoded?._id;
 };
 
 
+const [performanceData, setPerformanceData] = useState([]);
+const [performanceLoading, setPerformanceLoading] = useState(false);
+
+
+
+const fetchPerformanceData = async () => {
+  try {
+    setPerformanceLoading(true);
+    const res = await fetch("http://localhost:5000/Employee/performance/all");
+    const data = await res.json();
+
+    if (data?.success && Array.isArray(data.performances)) {
+      setPerformanceData(data.performances);
+    } else {
+      console.error("No performance data found:", data?.message);
+      setPerformanceData([]);
+    }
+  } catch (err) {
+    console.error("Error fetching performance data:", err);
+    setPerformanceData([]);
+  } finally {
+    setPerformanceLoading(false);
+  }
+};
+
+useEffect(() => {
+  if (activeTab === "performance") {
+    fetchPerformanceData();
+  }
+}, [activeTab]);
+
+
+
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this announcement?"))
       return;
     try {
       const res = await fetch(
-        `https://core-sphere-backend.vercel.app/api/announcement/delete/${id}`,
+        `http://localhost:5000/api/announcement/delete/${id}`,
         { method: "DELETE" }
       );
       const data = await res.json();
@@ -110,7 +143,7 @@ const authorId = decoded?._id;
   const handleViewEmployee = async (id) => {
     try {
       const res = await fetch(
-        `https://core-sphere-backend.vercel.app/Employee/getEmployeeById/${id}`
+        `http://localhost:5000/Employee/getEmployeeById/${id}`
       );
       const data = await res.json();
       if (data.success) {
@@ -130,7 +163,7 @@ const authorId = decoded?._id;
       return;
     try {
       const res = await fetch(
-        `https://core-sphere-backend.vercel.app/Employee/deleteEmployee/${id}`,
+        `http://localhost:5000/Employee/deleteEmployee/${id}`,
         {
           method: "DELETE",
         }
@@ -151,7 +184,7 @@ const authorId = decoded?._id;
     const fetchPayrolls = async () => {
       try {
         const res = await fetch(
-          "https://core-sphere-backend.vercel.app/Employee/getAllPayrolls"
+          "http://localhost:5000/Employee/getAllPayrolls"
         );
         const data = await res.json();
         if (data.success) {
@@ -169,7 +202,7 @@ const authorId = decoded?._id;
   const handlePayrollStatusChange = async (empId, payrollId, newStatus) => {
     try {
       const res = await fetch(
-        `https://core-sphere-backend.vercel.app/Employee/updatePayrollStatus/${empId}/${payrollId}`,
+        `http://localhost:5000/Employee/updatePayrollStatus/${empId}/${payrollId}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -196,7 +229,7 @@ const authorId = decoded?._id;
   useEffect(() => {
     const fetchLeaves = async () => {
       try {
-        const res = await fetch("https://core-sphere-backend.vercel.app/Leave/getLeaves");
+        const res = await fetch("http://localhost:5000/Leave/getLeaves");
         const data = await res.json();
         if (data.success) {
           setLeaves(data.leaves);
@@ -214,7 +247,7 @@ const authorId = decoded?._id;
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const res = await fetch("https://core-sphere-backend.vercel.app/Employee/getEmployee");
+        const res = await fetch("http://localhost:5000/Employee/getEmployee");
         const data = await res.json();
         if (data.success) setEmployees(data.employees);
       } catch (err) {
@@ -260,7 +293,7 @@ const authorId = decoded?._id;
         }
       }
 
-      const res = await fetch("https://core-sphere-backend.vercel.app/Employee/addEmployee", {
+      const res = await fetch("http://localhost:5000/Employee/addEmployee", {
         method: "POST",
         body: form,
       });
@@ -296,7 +329,7 @@ const authorId = decoded?._id;
   const handleStatusChange = async (id, newStatus) => {
     try {
       const res = await fetch(
-        `https://core-sphere-backend.vercel.app/Leave/updateLeaveStatus/${id}`,
+        `http://localhost:5000/Leave/updateLeaveStatus/${id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -326,7 +359,7 @@ const authorId = decoded?._id;
     try {
       const token = localStorage.getItem("token");
       const { data } = await axios.get(
-        "https://core-sphere-backend.vercel.app/Employee/getAllEmployeeAttendence",
+        "http://localhost:5000/Employee/getAllEmployeeAttendence",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -390,13 +423,13 @@ const authorId = decoded?._id;
               { key: "attendance", label: "Attendance", icon: <FiClock /> },
               { key: "payroll", label: "Payroll", icon: <FiDollarSign /> },
               { key: "announcements", label: "Announcement", icon: <FiStar /> },
-
-              {
-                key: "recruitment",
-                label: "Recruitment",
-                icon: <FiBriefcase />,
-              },
               { key: "performance", label: "Performance", icon: <FiStar /> },
+
+              // {
+              //   key: "recruitment",
+              //   label: "Recruitment",
+              //   icon: <FiBriefcase />,
+              // },
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -962,23 +995,92 @@ const authorId = decoded?._id;
           )}
 
           {/* === Performance === */}
-          {activeTab === "performance" && (
-            <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition">
-              <h2 className="text-xl font-bold text-indigo-900 mb-3">
-                Performance Reviews
-              </h2>
-              {performance.map((p, i) => (
-                <div
-                  key={i}
-                  className="py-2 border-b border-gray-100 flex justify-between text-sm hover:bg-sky-50 px-2 rounded transition"
-                >
-                  <span>{p.name}</span>
-                  <span className="text-gray-500">{p.rating}</span>
-                  <span className="font-bold text-sky-700">{p.score}/10</span>
-                </div>
-              ))}
-            </div>
-          )}
+   {activeTab === "performance" && (
+  <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition">
+    <h2 className="text-xl font-bold text-indigo-900 mb-3">
+      Performance Overview
+    </h2>
+
+    {performanceLoading ? (
+      <p className="text-gray-500 text-center py-6 animate-pulse">
+        Loading performance data...
+      </p>
+    ) : !performanceData || performanceData.length === 0 ? (
+      <p className="text-gray-400 text-center py-6">
+        No performance records found.
+      </p>
+    ) : (
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-sm border-collapse">
+          <thead>
+            <tr className="bg-indigo-50 text-indigo-800 font-semibold text-left">
+              <th className="p-3 border-b">Employee</th>
+              <th className="p-3 border-b">Role</th>
+              <th className="p-3 border-b">Department</th>
+              <th className="p-3 border-b text-center">Tasks</th>
+              <th className="p-3 border-b text-center">Attendance</th>
+              <th className="p-3 border-b text-center">Efficiency</th>
+              <th className="p-3 border-b text-center">Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {performanceData.map((emp, i) => (
+              <tr
+                key={i}
+                className="border-b hover:bg-sky-50 transition duration-200"
+              >
+                {/* Employee Info */}
+                <td className="p-3 flex items-center gap-3">
+                  <img
+                    src={
+                      emp.avatar ||
+                      `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        emp.name
+                      )}&background=random`
+                    }
+                    alt={emp.name}
+                    className="w-9 h-9 rounded-full object-cover border border-sky-300"
+                  />
+                  <div>
+                    <p className="font-semibold text-gray-800">{emp.name}</p>
+                    <p className="text-xs text-gray-500">{emp.employeeId}</p>
+                  </div>
+                </td>
+
+                {/* Role / Dept */}
+                <td className="p-3 text-gray-700">{emp.role}</td>
+                <td className="p-3 text-gray-700">{emp.department}</td>
+
+                {/* Task Completion */}
+                <td className="p-3 text-center text-gray-700">
+                  {emp.metrics?.taskCompletionRate || 0}%
+                </td>
+
+                {/* Attendance */}
+                <td className="p-3 text-center text-gray-700">
+                  {emp.metrics?.attendancePct || 0}%
+                </td>
+
+                {/* Efficiency */}
+                <td className="p-3 text-center text-gray-700">
+                  {emp.metrics?.timeEfficiency || 0}%
+                </td>
+
+                {/* Score */}
+                <td className="p-3 text-center font-bold text-indigo-900">
+                  {emp.score}%
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+)}
+
+
+
           {activeTab === "announcements" && (
             <main className="flex-1 p-6 overflow-y-auto">
               {/* === Header Row with Add Button === */}

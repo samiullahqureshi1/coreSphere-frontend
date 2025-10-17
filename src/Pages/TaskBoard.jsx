@@ -46,7 +46,7 @@ export default function TaskBoard() {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const res = await fetch("https://core-sphere-backend.vercel.app/Employee/getEmployee");
+        const res = await fetch("http://localhost:5000/Employee/getEmployee");
         const data = await res.json();
         if (data.success) setEmployees(data.employees);
       } catch (err) {
@@ -56,7 +56,7 @@ export default function TaskBoard() {
 
     const fetchTasks = async () => {
       try {
-        const res = await fetch("https://core-sphere-backend.vercel.app/api/task/get");
+        const res = await fetch("http://localhost:5000/api/task/get");
         const data = await res.json();
         if (data.success) {
           const grouped = { backlog: [], todo: [], inprogress: [], done: [] };
@@ -102,7 +102,7 @@ export default function TaskBoard() {
 
     try {
       const res = await fetch(
-        `https://core-sphere-backend.vercel.app/api/task/updateTaskStatus/${movedTask._id}`,
+        `http://localhost:5000/api/task/updateTaskStatus/${movedTask._id}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -124,7 +124,7 @@ export default function TaskBoard() {
     if (!newTask.title.trim()) return alert("Please enter a task title.");
 
     try {
-      const res = await fetch("https://core-sphere-backend.vercel.app/api/task/add", {
+      const res = await fetch("http://localhost:5000/api/task/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newTask),
@@ -158,7 +158,7 @@ export default function TaskBoard() {
 
     try {
       const res = await fetch(
-        `https://core-sphere-backend.vercel.app/api/task/deleteTask/${taskId}`,
+        `http://localhost:5000/api/task/deleteTask/${taskId}`,
         {
           method: "DELETE",
         }
@@ -182,7 +182,7 @@ export default function TaskBoard() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const res = await fetch("https://core-sphere-backend.vercel.app/Project/getProjects");
+        const res = await fetch("http://localhost:5000/Project/getProjects");
         const data = await res.json();
         if (data.success) {
           setProjects(data.projects);
@@ -496,7 +496,7 @@ export default function TaskBoard() {
                   <button
                     onClick={async () => {
                       const res = await fetch(
-                        `https://core-sphere-backend.vercel.app/api/task/update/${selectedTask._id}`,
+                        `http://localhost:5000/api/task/update/${selectedTask._id}`,
                         {
                           method: "PUT",
                           headers: { "Content-Type": "application/json" },
@@ -745,7 +745,7 @@ useEffect(() => {
       if (!userId) return;
 
       const res = await fetch(
-        `https://core-sphere-backend.vercel.app/api/task/getByEmployee/${userId}`
+        `http://localhost:5000/api/task/getByEmployee/${userId}`
       );
       const data = await res.json();
 
@@ -818,7 +818,7 @@ useEffect(() => {
 
   try {
     const res = await fetch(
-      `https://core-sphere-backend.vercel.app/api/task/updateEmployeeTaskStatus/${movedTask._id}`,
+      `http://localhost:5000/api/task/updateEmployeeTaskStatus/${movedTask._id}`,
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -985,7 +985,7 @@ function TaskCard({ task, idx, userId }) {
               <button
                 onClick={async () => {
                   await fetch(
-                    `https://core-sphere-backend.vercel.app/api/task/stopTimer/${task._id}`,
+                    `http://localhost:5000/api/task/stopTimer/${task._id}`,
                     {
                       method: "PATCH",
                       headers: { "Content-Type": "application/json" },
@@ -1003,7 +1003,7 @@ function TaskCard({ task, idx, userId }) {
               <button
                 onClick={async () => {
                   await fetch(
-                    `https://core-sphere-backend.vercel.app/api/task/startTimer/${task._id}`,
+                    `http://localhost:5000/api/task/startTimer/${task._id}`,
                     {
                       method: "PATCH",
                       headers: { "Content-Type": "application/json" },
@@ -1048,7 +1048,7 @@ function ManagerTaskBoard() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const res = await fetch("https://core-sphere-backend.vercel.app/Project/getProjects");
+        const res = await fetch("http://localhost:5000/Project/getProjects");
         const data = await res.json();
         if (data.success) {
           setProjects(data.projects);
@@ -1066,7 +1066,7 @@ function ManagerTaskBoard() {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const res = await fetch("https://core-sphere-backend.vercel.app/Employee/getEmployee");
+        const res = await fetch("http://localhost:5000/Employee/getEmployee");
         const data = await res.json();
         if (data.success) setEmployees(data.employees);
       } catch (err) {
@@ -1076,7 +1076,7 @@ function ManagerTaskBoard() {
 
     const fetchTasks = async () => {
       try {
-        const res = await fetch("https://core-sphere-backend.vercel.app/api/task/get");
+        const res = await fetch("http://localhost:5000/api/task/get");
         const data = await res.json();
         if (data.success) {
           const grouped = { backlog: [], todo: [], inprogress: [], done: [] };
@@ -1098,7 +1098,7 @@ function ManagerTaskBoard() {
     if (!newTask.title.trim()) return alert("Please enter a task title.");
 
     try {
-      const res = await fetch("https://core-sphere-backend.vercel.app/api/task/add", {
+      const res = await fetch("http://localhost:5000/api/task/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1141,7 +1141,7 @@ function ManagerTaskBoard() {
 
     try {
       const res = await fetch(
-        `https://core-sphere-backend.vercel.app/api/task/deleteTask/${taskId}`,
+        `http://localhost:5000/api/task/deleteTask/${taskId}`,
         {
           method: "DELETE",
         }
@@ -1189,7 +1189,7 @@ function ManagerTaskBoard() {
 
     try {
       await fetch(
-        `https://core-sphere-backend.vercel.app/api/task/updateTaskStatus/${movedTask._id}`,
+        `http://localhost:5000/api/task/updateTaskStatus/${movedTask._id}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

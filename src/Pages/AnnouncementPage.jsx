@@ -19,7 +19,7 @@ export default function AnnouncementPage() {
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
-        const res = await fetch("https://core-sphere-backend.vercel.app/api/announcement/get");
+        const res = await fetch("http://localhost:5000/api/announcement/get");
         const data = await res.json();
         if (data.success) setAnnouncements(data.announcements.reverse());
       } catch (err) {
@@ -35,7 +35,7 @@ export default function AnnouncementPage() {
     }
 
     try {
-      const res = await fetch("https://core-sphere-backend.vercel.app/api/announcement/add", {
+      const res = await fetch("http://localhost:5000/api/announcement/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newAnnouncement),
@@ -59,7 +59,7 @@ export default function AnnouncementPage() {
       return;
     try {
       const res = await fetch(
-        `https://core-sphere-backend.vercel.app/api/announcement/delete/${id}`,
+        `http://localhost:5000/api/announcement/delete/${id}`,
         { method: "DELETE" }
       );
       const data = await res.json();
