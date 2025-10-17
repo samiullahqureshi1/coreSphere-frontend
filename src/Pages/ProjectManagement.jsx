@@ -37,7 +37,7 @@ useEffect(() => {
   const fetchReports = async () => {
     try {
       setReportsLoading(true);
-      const res = await fetch("http://localhost:5000/Employee/reports/overview");
+      const res = await fetch("https://core-sphere-backend.vercel.app/Employee/reports/overview");
       const data = await res.json();
 
       if (data.success) {
@@ -66,7 +66,7 @@ useEffect(() => {
     const fetchProjects = async () => {
       try {
         const res = await fetch(
-          "http://localhost:5000/Project/getProjects"
+          "https://core-sphere-backend.vercel.app/Project/getProjects"
         );
         const data = await res.json();
         if (data.success) {
@@ -86,7 +86,7 @@ useEffect(() => {
       try {
         setLoading(true);
         const res = await fetch(
-          "http://localhost:5000/api/task/time-tracking-summary"
+          "https://core-sphere-backend.vercel.app/api/task/time-tracking-summary"
         );
         const data = await res.json();
 
@@ -118,7 +118,7 @@ useEffect(() => {
     setLoading(true);
     try {
       const res = await fetch(
-        "http://localhost:5000/Project/addProject",
+        "https://core-sphere-backend.vercel.app/Project/addProject",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -156,7 +156,7 @@ useEffect(() => {
       return;
     try {
       const res = await fetch(
-        `http://localhost:5000/Project/deleteProject/${id}`,
+        `https://core-sphere-backend.vercel.app/Project/deleteProject/${id}`,
         {
           method: "DELETE",
         }
@@ -178,7 +178,7 @@ useEffect(() => {
     const fetchEmployees = async () => {
       try {
         const res = await fetch(
-          "http://localhost:5000/Employee/getEmployee"
+          "https://core-sphere-backend.vercel.app/Employee/getEmployee"
         );
         const data = await res.json();
         if (data.success) {
@@ -243,7 +243,7 @@ useEffect(() => {
       }
 
       const res = await fetch(
-        "http://localhost:5000/Employee/addEmployee",
+        "https://core-sphere-backend.vercel.app/Employee/addEmployee",
         {
           method: "POST",
           body: formData,
@@ -321,7 +321,7 @@ useEffect(() => {
 
     try {
       const res = await fetch(
-        "http://localhost:5000/api/task/add",
+        "https://core-sphere-backend.vercel.app/api/task/add",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

@@ -23,7 +23,7 @@ export default function EmployeePayroll() {
         if (!employeeId) return;
 
         const res = await fetch(
-          `http://localhost:5000/Employee/getPayrollByEmployee/${employeeId}`
+          `https://core-sphere-backend.vercel.app/Employee/getPayrollByEmployee/${employeeId}`
         );
         const data = await res.json();
 

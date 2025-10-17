@@ -30,7 +30,7 @@ export default function SetPassword() {
 
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:5000/auth/set-password", {
+      const res = await fetch("https://core-sphere-backend.vercel.app/auth/set-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, password }),

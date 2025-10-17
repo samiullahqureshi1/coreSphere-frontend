@@ -20,10 +20,10 @@
 //       try {
 //         // 👇 Replace these APIs with your actual endpoints
 //         const endpoints = {
-//           leaves: "http://localhost:5000/api/leave/pendingForManager/123",
-//           expenses: "http://localhost:5000/api/expense/pendingForManager/123",
-//           timesheets: "http://localhost:5000/api/timesheet/pending/123",
-//           tasks: "http://localhost:5000/api/task/pendingForApproval/123",
+//           leaves: "https://core-sphere-backend.vercel.app/api/leave/pendingForManager/123",
+//           expenses: "https://core-sphere-backend.vercel.app/api/expense/pendingForManager/123",
+//           timesheets: "https://core-sphere-backend.vercel.app/api/timesheet/pending/123",
+//           tasks: "https://core-sphere-backend.vercel.app/api/task/pendingForApproval/123",
 //         };
 
 //         const res = await fetch(endpoints[activeTab]);
@@ -191,13 +191,13 @@ export default function ManagerApprovals() {
       setLoading(true);
       try {
         const endpoints = {
-          leaves: "http://localhost:5000/Leave/getLeaves",
+          leaves: "https://core-sphere-backend.vercel.app/Leave/getLeaves",
           expenses:
-            "http://localhost:5000/api/expense/pendingForManager/123",
+            "https://core-sphere-backend.vercel.app/api/expense/pendingForManager/123",
           timesheets:
-            "http://localhost:5000/api/timesheet/pending/123",
+            "https://core-sphere-backend.vercel.app/api/timesheet/pending/123",
           tasks:
-            "http://localhost:5000/api/task/pendingForApproval/123",
+            "https://core-sphere-backend.vercel.app/api/task/pendingForApproval/123",
         };
 
         const res = await fetch(endpoints[activeTab]);

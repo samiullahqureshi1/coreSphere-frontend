@@ -14,7 +14,7 @@ export default function TeamOverviewPage() {
   useEffect(() => {
     const fetchTeam = async () => {
       try {
-        const res = await fetch("http://localhost:5000/Employee/getEmployee");
+        const res = await fetch("https://core-sphere-backend.vercel.app/Employee/getEmployee");
         const data = await res.json();
         console.log("Team API Response:", data); // 👀 debug log
 

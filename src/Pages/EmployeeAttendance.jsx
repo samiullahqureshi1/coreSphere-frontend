@@ -16,7 +16,7 @@ export default function EmployeeAttendance() {
       try {
         if (!employeeId) return;
         const res = await fetch(
-          `http://localhost:5000/Employee/getAttendanceByEmployee/${employeeId}`
+          `https://core-sphere-backend.vercel.app/Employee/getAttendanceByEmployee/${employeeId}`
         );
         const data = await res.json();
 

@@ -29,7 +29,7 @@ export default function ManagerProjects() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const res = await fetch("http://localhost:5000/Project/getProjects");
+        const res = await fetch("https://core-sphere-backend.vercel.app/Project/getProjects");
         const data = await res.json();
         if (data.success) {
           setProjects(data.projects);
@@ -54,7 +54,7 @@ export default function ManagerProjects() {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/Project/addProject", {
+      const res = await fetch("https://core-sphere-backend.vercel.app/Project/addProject", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...formData, manager: managerId }),
@@ -91,7 +91,7 @@ export default function ManagerProjects() {
       return;
     try {
       const res = await fetch(
-        `http://localhost:5000/Project/deleteProject/${id}`,
+        `https://core-sphere-backend.vercel.app/Project/deleteProject/${id}`,
         { method: "DELETE" }
       );
       const data = await res.json();

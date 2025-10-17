@@ -46,7 +46,7 @@ const authorId = decoded?._id;
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/announcement/get");
+        const res = await fetch("https://core-sphere-backend.vercel.app/api/announcement/get");
         const data = await res.json();
         if (data.success) setAnnouncements(data.announcements.reverse());
       } catch (err) {
@@ -68,7 +68,7 @@ const authorId = decoded?._id;
       author: authorId, // ✅ added author here
     };
 
-    const res = await fetch("http://localhost:5000/api/announcement/add", {
+    const res = await fetch("https://core-sphere-backend.vercel.app/api/announcement/add", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -98,7 +98,7 @@ const [performanceLoading, setPerformanceLoading] = useState(false);
 const fetchPerformanceData = async () => {
   try {
     setPerformanceLoading(true);
-    const res = await fetch("http://localhost:5000/Employee/performance/all");
+    const res = await fetch("https://core-sphere-backend.vercel.app/Employee/performance/all");
     const data = await res.json();
 
     if (data?.success && Array.isArray(data.performances)) {
@@ -128,7 +128,7 @@ useEffect(() => {
       return;
     try {
       const res = await fetch(
-        `http://localhost:5000/api/announcement/delete/${id}`,
+        `https://core-sphere-backend.vercel.app/api/announcement/delete/${id}`,
         { method: "DELETE" }
       );
       const data = await res.json();
@@ -143,7 +143,7 @@ useEffect(() => {
   const handleViewEmployee = async (id) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/Employee/getEmployeeById/${id}`
+        `https://core-sphere-backend.vercel.app/Employee/getEmployeeById/${id}`
       );
       const data = await res.json();
       if (data.success) {
@@ -163,7 +163,7 @@ useEffect(() => {
       return;
     try {
       const res = await fetch(
-        `http://localhost:5000/Employee/deleteEmployee/${id}`,
+        `https://core-sphere-backend.vercel.app/Employee/deleteEmployee/${id}`,
         {
           method: "DELETE",
         }
@@ -184,7 +184,7 @@ useEffect(() => {
     const fetchPayrolls = async () => {
       try {
         const res = await fetch(
-          "http://localhost:5000/Employee/getAllPayrolls"
+          "https://core-sphere-backend.vercel.app/Employee/getAllPayrolls"
         );
         const data = await res.json();
         if (data.success) {
@@ -202,7 +202,7 @@ useEffect(() => {
   const handlePayrollStatusChange = async (empId, payrollId, newStatus) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/Employee/updatePayrollStatus/${empId}/${payrollId}`,
+        `https://core-sphere-backend.vercel.app/Employee/updatePayrollStatus/${empId}/${payrollId}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -229,7 +229,7 @@ useEffect(() => {
   useEffect(() => {
     const fetchLeaves = async () => {
       try {
-        const res = await fetch("http://localhost:5000/Leave/getLeaves");
+        const res = await fetch("https://core-sphere-backend.vercel.app/Leave/getLeaves");
         const data = await res.json();
         if (data.success) {
           setLeaves(data.leaves);
@@ -247,7 +247,7 @@ useEffect(() => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const res = await fetch("http://localhost:5000/Employee/getEmployee");
+        const res = await fetch("https://core-sphere-backend.vercel.app/Employee/getEmployee");
         const data = await res.json();
         if (data.success) setEmployees(data.employees);
       } catch (err) {
@@ -293,7 +293,7 @@ useEffect(() => {
         }
       }
 
-      const res = await fetch("http://localhost:5000/Employee/addEmployee", {
+      const res = await fetch("https://core-sphere-backend.vercel.app/Employee/addEmployee", {
         method: "POST",
         body: form,
       });
@@ -329,7 +329,7 @@ useEffect(() => {
   const handleStatusChange = async (id, newStatus) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/Leave/updateLeaveStatus/${id}`,
+        `https://core-sphere-backend.vercel.app/Leave/updateLeaveStatus/${id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -359,7 +359,7 @@ useEffect(() => {
     try {
       const token = localStorage.getItem("token");
       const { data } = await axios.get(
-        "http://localhost:5000/Employee/getAllEmployeeAttendence",
+        "https://core-sphere-backend.vercel.app/Employee/getAllEmployeeAttendence",
         {
           headers: { Authorization: `Bearer ${token}` },
         }

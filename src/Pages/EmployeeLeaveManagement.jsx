@@ -30,7 +30,7 @@ export default function EmployeeLeaveManagement() {
         if (!employeeId) return;
 
         const res = await fetch(
-          `http://localhost:5000/Leave/getByEmployee/${employeeId}`
+          `https://core-sphere-backend.vercel.app/Leave/getByEmployee/${employeeId}`
         );
         const data = await res.json();
 
@@ -62,7 +62,7 @@ export default function EmployeeLeaveManagement() {
 
     try {
       const res = await fetch(
-        "http://localhost:5000/Leave/addLeave",
+        "https://core-sphere-backend.vercel.app/Leave/addLeave",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
