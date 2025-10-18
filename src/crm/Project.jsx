@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import {
   FiPlus,
   FiSearch,
@@ -10,37 +11,70 @@ import {
 } from "react-icons/fi";
 
 export default function CRMProjects() {
-  const [projects, setProjects] = useState([
-    {
-      id: 1,
-      name: "Website Redesign",
-      client: "BrightTech",
-      budget: 5000,
-      startDate: "2025-09-01",
-      deadline: "2025-11-15",
-      status: "In Progress",
-    },
-    {
-      id: 2,
-      name: "Finance Dashboard",
-      client: "FinGrow",
-      budget: 8000,
-      startDate: "2025-08-10",
-      deadline: "2025-10-25",
-      status: "Completed",
-    },
-  ]);
+  const API_URL = "https://core-sphere-backend.vercel.app/Project"; // your backend endpoint
 
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
   const [newProject, setNewProject] = useState({
     name: "",
     client: "",
+    description: "",
     startDate: "",
     deadline: "",
     budget: "",
     status: "Planning",
   });
+
+  // ✅ Fetch all projects
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(`${API_URL}/getProjects`);
+        if (res.data.success) {
+          setProjects(res.data.projects);
+        }
+      } catch (err) {
+        console.error("Error fetching projects:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProjects();
+  }, []);
+
+  // ✅ Add new project
+  const handleAddProject = async (e) => {
+    e.preventDefault();
+
+    try {
+      const payload = {
+        ...newProject,
+        budget: parseFloat(newProject.budget) || 0,
+      };
+
+      const res = await axios.post(`${API_URL}/addProject`, payload);
+      if (res.data.success) {
+        setProjects((prev) => [...prev, res.data.project]);
+        setIsDrawerOpen(false);
+        setNewProject({
+          name: "",
+          client: "",
+          description: "",
+          startDate: "",
+          deadline: "",
+          budget: "",
+          status: "Planning",
+        });
+      }
+    } catch (err) {
+      console.error("Error adding project:", err);
+      alert("Failed to create project");
+    }
+  };
 
   const filteredProjects = projects.filter(
     (p) =>
@@ -49,20 +83,12 @@ export default function CRMProjects() {
       p.status.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleAddProject = (e) => {
-    e.preventDefault();
-    const newEntry = { id: Date.now(), ...newProject };
-    setProjects((prev) => [...prev, newEntry]);
-    setNewProject({
-      name: "",
-      client: "",
-      startDate: "",
-      deadline: "",
-      budget: "",
-      status: "Planning",
-    });
-    setIsDrawerOpen(false);
-  };
+  if (loading)
+    return (
+      <div className="flex justify-center items-center h-[70vh] text-gray-500">
+        Loading projects...
+      </div>
+    );
 
   return (
     <div className="relative">
@@ -103,10 +129,9 @@ export default function CRMProjects() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProjects.map((p) => (
             <div
-              key={p.id}
+              key={p._id}
               className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-lg transition-all duration-200"
             >
-              {/* Project Title */}
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-semibold text-indigo-900 flex items-center gap-2">
                   <FiBriefcase className="text-sky-600" />
@@ -118,16 +143,18 @@ export default function CRMProjects() {
                       ? "bg-emerald-100 text-emerald-700"
                       : p.status === "In Progress"
                       ? "bg-sky-100 text-sky-700"
-                      : "bg-amber-100 text-amber-700"
+                      : p.status === "On Hold"
+                      ? "bg-amber-100 text-amber-700"
+                      : "bg-gray-100 text-gray-700"
                   }`}
                 >
                   {p.status}
                 </span>
               </div>
 
-              {/* Table-style key/value display */}
+              {/* Key Details */}
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between items-center border-b border-gray-100 pb-1">
+                <div className="flex justify-between border-b border-gray-100 pb-1">
                   <span className="text-gray-500 font-medium flex items-center gap-2">
                     <FiUser className="text-sky-500" /> Client
                   </span>
@@ -136,9 +163,9 @@ export default function CRMProjects() {
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center border-b border-gray-100 pb-1">
+                <div className="flex justify-between border-b border-gray-100 pb-1">
                   <span className="text-gray-500 font-medium flex items-center gap-2">
-                    <FiCalendar className="text-indigo-500" /> Start Date
+                    <FiCalendar className="text-indigo-500" /> Start
                   </span>
                   <span className="text-gray-700">
                     {p.startDate
@@ -147,7 +174,7 @@ export default function CRMProjects() {
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center border-b border-gray-100 pb-1">
+                <div className="flex justify-between border-b border-gray-100 pb-1">
                   <span className="text-gray-500 font-medium flex items-center gap-2">
                     <FiCalendar className="text-indigo-500" /> Deadline
                   </span>
@@ -158,7 +185,7 @@ export default function CRMProjects() {
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between">
                   <span className="text-gray-500 font-medium flex items-center gap-2">
                     <FiDollarSign className="text-emerald-500" /> Budget
                   </span>
@@ -183,7 +210,7 @@ export default function CRMProjects() {
         }`}
       >
         <div className="flex justify-between items-center border-b border-gray-100 px-6 py-5 bg-indigo-50">
-          <h2 className="text-xl font-bold text-indigo-900">Add Project</h2>
+          <h2 className="text-xl font-bold text-indigo-900">Add New Project</h2>
           <FiX
             className="text-gray-500 cursor-pointer hover:text-red-500 transition"
             size={22}
@@ -204,14 +231,14 @@ export default function CRMProjects() {
                   setNewProject({ ...newProject, name: e.target.value })
                 }
                 placeholder="Enter project title"
-                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-600"
                 required
+                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-600"
               />
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-800 mb-1">
-                Client Name <span className="text-red-500">*</span>
+                Client Name
               </label>
               <input
                 type="text"
@@ -221,7 +248,21 @@ export default function CRMProjects() {
                 }
                 placeholder="Enter client name"
                 className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-600"
-                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-800 mb-1">
+                Description
+              </label>
+              <textarea
+                rows="3"
+                value={newProject.description}
+                onChange={(e) =>
+                  setNewProject({ ...newProject, description: e.target.value })
+                }
+                placeholder="Brief project description..."
+                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-600"
               />
             </div>
 
@@ -234,7 +275,10 @@ export default function CRMProjects() {
                   type="date"
                   value={newProject.startDate}
                   onChange={(e) =>
-                    setNewProject({ ...newProject, startDate: e.target.value })
+                    setNewProject({
+                      ...newProject,
+                      startDate: e.target.value,
+                    })
                   }
                   className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-600"
                 />
@@ -247,7 +291,10 @@ export default function CRMProjects() {
                   type="date"
                   value={newProject.deadline}
                   onChange={(e) =>
-                    setNewProject({ ...newProject, deadline: e.target.value })
+                    setNewProject({
+                      ...newProject,
+                      deadline: e.target.value,
+                    })
                   }
                   className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-600"
                 />
@@ -282,6 +329,7 @@ export default function CRMProjects() {
               >
                 <option value="Planning">Planning</option>
                 <option value="In Progress">In Progress</option>
+                <option value="On Hold">On Hold</option>
                 <option value="Completed">Completed</option>
               </select>
             </div>

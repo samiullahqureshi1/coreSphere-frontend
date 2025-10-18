@@ -25,9 +25,10 @@ export default function CRM() {
 
   const tabs = [
     { key: "leads", label: "Leads", icon: <FiList /> },
+        { key: "proposals", label: "Proposals", icon: <FiFileText /> },
+
     { key: "clients", label: "Clients", icon: <FiUsers /> },
     { key: "projects", label: "Projects", icon: <FiBriefcase /> },
-    { key: "proposals", label: "Proposals", icon: <FiFileText /> },
     { key: "invoices", label: "Invoices", icon: <FiDollarSign /> },
     { key: "communications", label: "Communications", icon: <FiPhoneCall /> },
     { key: "reports", label: "Reports", icon: <FiPieChart /> },
