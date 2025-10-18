@@ -30,9 +30,9 @@ export default function CRM() {
     { key: "clients", label: "Clients", icon: <FiUsers /> },
     { key: "projects", label: "Projects", icon: <FiBriefcase /> },
     { key: "invoices", label: "Invoices", icon: <FiDollarSign /> },
-    { key: "communications", label: "Communications", icon: <FiPhoneCall /> },
-    { key: "reports", label: "Reports", icon: <FiPieChart /> },
-    { key: "settings", label: "Settings", icon: <FiSettings /> },
+    // { key: "communications", label: "Communications", icon: <FiPhoneCall /> },
+    // { key: "reports", label: "Reports", icon: <FiPieChart /> },
+    // { key: "settings", label: "Settings", icon: <FiSettings /> },
   ];
 
   // render selected tab component dynamically
