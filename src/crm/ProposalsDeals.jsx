@@ -165,7 +165,7 @@ export default function ProposalsDeals() {
         status: editForm.status,
         notes: editForm.notes,
       };
-      await axios.put(`${API_URL}/${selectedDeal.id}`, payload);
+      await axios.put(`${API_URL}/${selectedDeal.id}/editDeals`, payload);
       setIsEditDrawerOpen(false);
       window.location.reload();
     } catch (err) {
@@ -189,7 +189,7 @@ export default function ProposalsDeals() {
         status: newDeal.status,
         notes: newDeal.notes,
       };
-      await axios.post(`${API_URL}`, payload);
+      await axios.post(`${API_URL}/addDeals`, payload);
       setIsAddDrawerOpen(false);
       window.location.reload();
     } catch (err) {
@@ -206,7 +206,7 @@ export default function ProposalsDeals() {
   // ✅ Confirm Delete
   const handleDelete = async () => {
     try {
-      await axios.delete(`${API_URL}/${dealToDelete.id}`);
+      await axios.delete(`${API_URL}/${dealToDelete.id}/deleteDeals`);
       setIsDeleteModalOpen(false);
       window.location.reload();
     } catch (err) {
