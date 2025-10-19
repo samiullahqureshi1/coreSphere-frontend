@@ -18,14 +18,12 @@ import Invoices from "../crm/Invoices";
 import Communications from "../crm/Comunication";
 import Reports from "../crm/Reports";
 
-
-
 export default function CRM() {
   const [activeTab, setActiveTab] = useState("leads");
 
   const tabs = [
     { key: "leads", label: "Leads", icon: <FiList /> },
-        { key: "proposals", label: "Proposals", icon: <FiFileText /> },
+    { key: "proposals", label: "Proposals", icon: <FiFileText /> },
 
     { key: "clients", label: "Clients", icon: <FiUsers /> },
     { key: "projects", label: "Projects", icon: <FiBriefcase /> },
